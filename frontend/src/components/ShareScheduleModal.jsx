@@ -246,7 +246,7 @@ export const ShareScheduleModal = ({
               >
                 {/* Header */}
                 <div className="flex items-center justify-between mb-4 sm:mb-6">
-                  <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 leading-tight pr-2">
+                  <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-white leading-tight pr-2">
                     Поделиться расписанием
                   </h2>
                   <button
@@ -254,19 +254,19 @@ export const ShareScheduleModal = ({
                       if (hapticFeedback) hapticFeedback('impact', 'light');
                       onClose();
                     }}
-                    className="w-8 h-8 sm:w-9 sm:h-9 flex-shrink-0 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 active:bg-gray-300 transition-colors"
+                    className="w-8 h-8 sm:w-9 sm:h-9 flex-shrink-0 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 active:bg-white/30 transition-colors"
                   >
-                    <X className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
+                    <X className="w-4 h-4 sm:w-5 sm:h-5 text-gray-300" />
                   </button>
                 </div>
 
                 {/* Info */}
-                <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl sm:rounded-2xl">
-                  <p className="text-xs sm:text-sm text-gray-600 text-center">
+                <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-xl sm:rounded-2xl border border-white/10">
+                  <p className="text-xs sm:text-sm text-gray-200 text-center">
                     📅 {formatDate(selectedDate)}
                   </p>
                   {groupName && (
-                    <p className="text-xs text-gray-500 text-center mt-1">
+                    <p className="text-xs text-gray-400 text-center mt-1">
                       Группа: {groupName}
                     </p>
                   )}
