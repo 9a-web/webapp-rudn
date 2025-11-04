@@ -60,12 +60,24 @@ export const AchievementsModal = ({
             exit="exit"
           >
             <motion.div
-              className="bg-[#2A2A2A] rounded-t-3xl sm:rounded-3xl w-full sm:max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl"
+              className="rounded-t-3xl sm:rounded-3xl w-full sm:max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl border border-white/10"
+              style={{
+                backgroundColor: 'rgba(42, 42, 42, 0.8)',
+                backdropFilter: 'blur(40px) saturate(180%)',
+                WebkitBackdropFilter: 'blur(40px) saturate(180%)'
+              }}
               variants={modalVariants}
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
-              <div className="sticky top-0 bg-[#2A2A2A] border-b border-gray-700 p-4 z-10">
+              <div 
+                className="sticky top-0 border-b border-gray-700 p-4 z-10"
+                style={{
+                  backgroundColor: 'rgba(42, 42, 42, 0.95)',
+                  backdropFilter: 'blur(20px)',
+                  WebkitBackdropFilter: 'blur(20px)'
+                }}
+              >
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <Trophy className="w-6 h-6 text-[#FFE66D]" />
