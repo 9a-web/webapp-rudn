@@ -121,7 +121,8 @@ export const BottomNavigation = ({ activeTab = 'home', onTabChange, hapticFeedba
                       <motion.div
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className={`absolute inset-0 bg-gradient-to-br ${tab.gradient} opacity-10 blur-xl rounded-2xl`}
+                        className={`absolute inset-0 bg-gradient-to-br ${tab.gradient} opacity-10 blur-xl`}
+                        style={{ borderRadius: '40px' }}
                       />
                     )}
                   </motion.button>
