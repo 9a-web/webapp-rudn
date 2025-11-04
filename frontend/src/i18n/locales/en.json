@@ -91,6 +91,11 @@
   "sidebar": {
     "quickActions": "Quick Actions"
   },
+  "bottomNav": {
+    "home": "Home",
+    "tasks": "To-Do List",
+    "journal": "Journal"
+  },
   "common": {
     "loading": "Loading...",
     "retry": "Retry",
