@@ -66,16 +66,18 @@ export const BottomNavigation = ({ activeTab = 'home', onTabChange, hapticFeedba
                     key={tab.id}
                     onClick={() => handleTabClick(tab.id)}
                     whileTap={{ scale: 0.92 }}
-                    className="relative flex-1 flex flex-col items-center justify-center py-2 px-3 rounded-2xl transition-all duration-300 touch-manipulation"
+                    className="relative flex-1 flex flex-col items-center justify-center py-2 px-3 transition-all duration-300 touch-manipulation"
                     style={{
-                      backgroundColor: isActive ? 'rgba(255, 255, 255, 0.05)' : 'transparent'
+                      backgroundColor: isActive ? 'rgba(255, 255, 255, 0.05)' : 'transparent',
+                      borderRadius: '40px'
                     }}
                   >
                     {/* Active indicator */}
                     {isActive && (
                       <motion.div
                         layoutId="activeTab"
-                        className="absolute inset-0 rounded-2xl bg-white/5"
+                        className="absolute inset-0 bg-white/5"
+                        style={{ borderRadius: '40px' }}
                         transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
                       />
                     )}
