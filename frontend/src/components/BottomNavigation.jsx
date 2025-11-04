@@ -128,9 +128,6 @@ export const BottomNavigation = ({ activeTab = 'home', onTabChange, hapticFeedba
             </div>
           </div>
         </div>
-
-        {/* Bottom safe area for iOS */}
-        <div className="bg-[#1C1C1E]/95 h-safe-area-inset-bottom" />
       </div>
     </motion.nav>
   );
