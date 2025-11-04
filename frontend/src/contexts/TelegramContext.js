@@ -25,20 +25,33 @@ export const TelegramProvider = ({ children }) => {
     if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
       const tg = window.Telegram.WebApp;
       
+      // Настройка для полноэкранного режима
+      tg.ready();
+      
       // Расширяем WebApp на весь экран
       tg.expand();
+      
+      // Отключаем вертикальные свайпы (для лучшего UX)
+      if (tg.disableVerticalSwipes) {
+        tg.disableVerticalSwipes();
+      }
       
       // Включаем закрытие по свайпу вниз (если поддерживается)
       if (tg.enableClosingConfirmation) {
         tg.enableClosingConfirmation();
       }
       
-      // Устанавливаем тему (если поддерживается)
+      // Устанавливаем цвета темы для нативного вида
       if (tg.setHeaderColor) {
-        tg.setHeaderColor('#1a1a1a');
+        tg.setHeaderColor('#1C1C1E');
       }
       if (tg.setBackgroundColor) {
-        tg.setBackgroundColor('#1a1a1a');
+        tg.setBackgroundColor('#1C1C1E');
+      }
+      
+      // Устанавливаем цвет bottom bar (если поддерживается)
+      if (tg.setBottomBarColor) {
+        tg.setBottomBarColor('#1C1C1E');
       }
       
       // Получаем данные пользователя
