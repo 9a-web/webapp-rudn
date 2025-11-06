@@ -1,23 +1,98 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { ClipboardList, Check } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { motion, PanInfo } from 'framer-motion';
+import { ClipboardList, Check, Plus, Edit2, Trash2, X } from 'lucide-react';
+import { tasksAPI } from '../services/api';
+import { useTelegram } from '../contexts/TelegramContext';
 
 export const TasksSection = () => {
-  // Временные данные для демонстрации
-  const [todayTasks, setTodayTasks] = useState([
-    { id: 1, text: 'Подготовка к экзамену', completed: false },
-    { id: 2, text: 'Сдать лабораторную', completed: true },
-    { id: 3, text: 'Домашнее задание', completed: false },
-    { id: 4, text: 'Купить учебники', completed: false },
-  ]);
+  const { user, hapticFeedback } = useTelegram();
+  
+  const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [newTaskText, setNewTaskText] = useState('');
+  const [editingTaskId, setEditingTaskId] = useState(null);
+  const [editingText, setEditingText] = useState('');
 
-  const toggleTask = (taskId) => {
-    setTodayTasks(tasks => 
-      tasks.map(task => 
-        task.id === taskId ? { ...task, completed: !task.completed } : task
-      )
-    );
+  // Загрузка задач при монтировании
+  useEffect(() => {
+    if (user) {
+      loadTasks();
+    }
+  }, [user]);
+
+  const loadTasks = async () => {
+    try {
+      setLoading(true);
+      const data = await tasksAPI.getUserTasks(user.id);
+      setTasks(data || []);
+    } catch (error) {
+      console.error('Error loading tasks:', error);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const handleAddTask = async () => {
+    if (!newTaskText.trim()) return;
+    
+    try {
+      hapticFeedback?.impactOccurred('medium');
+      const newTask = await tasksAPI.createTask(user.id, newTaskText.trim());
+      setTasks([newTask, ...tasks]);
+      setNewTaskText('');
+    } catch (error) {
+      console.error('Error creating task:', error);
+    }
+  };
+
+  const toggleTask = async (taskId) => {
+    try {
+      hapticFeedback?.impactOccurred('light');
+      const task = tasks.find(t => t.id === taskId);
+      const updatedTask = await tasksAPI.updateTask(taskId, { completed: !task.completed });
+      setTasks(tasks.map(t => t.id === taskId ? updatedTask : t));
+    } catch (error) {
+      console.error('Error toggling task:', error);
+    }
+  };
+
+  const handleStartEdit = (task) => {
+    setEditingTaskId(task.id);
+    setEditingText(task.text);
+    hapticFeedback?.impactOccurred('light');
+  };
+
+  const handleSaveEdit = async (taskId) => {
+    if (!editingText.trim()) return;
+    
+    try {
+      hapticFeedback?.impactOccurred('medium');
+      const updatedTask = await tasksAPI.updateTask(taskId, { text: editingText.trim() });
+      setTasks(tasks.map(t => t.id === taskId ? updatedTask : t));
+      setEditingTaskId(null);
+      setEditingText('');
+    } catch (error) {
+      console.error('Error updating task:', error);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingTaskId(null);
+    setEditingText('');
+  };
+
+  const handleDeleteTask = async (taskId) => {
+    try {
+      hapticFeedback?.impactOccurred('heavy');
+      await tasksAPI.deleteTask(taskId);
+      setTasks(tasks.filter(t => t.id !== taskId));
+    } catch (error) {
+      console.error('Error deleting task:', error);
+    }
+  };
+
+  // Фильтруем задачи на сегодня
+  const todayTasks = tasks.slice(0, 10); // Показываем последние 10 задач
 
   const currentDate = new Date().toLocaleDateString('ru-RU', {
     day: 'numeric',
