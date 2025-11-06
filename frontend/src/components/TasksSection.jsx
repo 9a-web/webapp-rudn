@@ -295,6 +295,14 @@ export const TasksSection = ({ userSettings, selectedDate, weekNumber }) => {
     month: 'long'
   });
 
+  const groupedTasks = groupTasksByDeadline();
+  const categories = [
+    { id: 'study', label: 'Учеба', emoji: '📚', color: 'from-blue-400 to-blue-500' },
+    { id: 'personal', label: 'Личное', emoji: '🏠', color: 'from-green-400 to-green-500' },
+    { id: 'sport', label: 'Спорт', emoji: '🏃', color: 'from-red-400 to-red-500' },
+    { id: 'project', label: 'Проекты', emoji: '💼', color: 'from-purple-400 to-purple-500' },
+  ];
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -304,15 +312,205 @@ export const TasksSection = ({ userSettings, selectedDate, weekNumber }) => {
       className="min-h-[calc(100vh-140px)] bg-white rounded-t-[40px] mt-6 p-6"
     >
       {/* Header секции */}
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-yellow-400 to-orange-400 flex items-center justify-center">
-          <ClipboardList className="w-6 h-6 text-white" strokeWidth={2.5} />
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-yellow-400 to-orange-400 flex items-center justify-center">
+            <ClipboardList className="w-6 h-6 text-white" strokeWidth={2.5} />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-[#1C1C1E]">Список дел</h2>
+            <p className="text-sm text-[#999999]">
+              {tasks.length} задач · {tasks.filter(t => t.completed).length} выполнено
+            </p>
+          </div>
         </div>
-        <div>
-          <h2 className="text-2xl font-bold text-[#1C1C1E]">Список дел</h2>
-          <p className="text-sm text-[#999999]">Управляйте своими задачами</p>
+        
+        {/* Кнопки управления */}
+        <div className="flex items-center gap-2">
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={() => {
+              hapticFeedback && hapticFeedback('impact', 'light');
+              setShowFilters(!showFilters);
+            }}
+            className={`p-2 rounded-xl transition-colors ${
+              showFilters || selectedCategory || selectedPriority
+                ? 'bg-yellow-100 text-yellow-600'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+            title="Фильтры"
+          >
+            <Filter className="w-5 h-5" />
+          </motion.button>
+          
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={() => {
+              hapticFeedback && hapticFeedback('impact', 'light');
+              const sortOptions = ['created', 'priority', 'deadline'];
+              const currentIndex = sortOptions.indexOf(sortBy);
+              setSortBy(sortOptions[(currentIndex + 1) % sortOptions.length]);
+            }}
+            className="p-2 rounded-xl bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+            title={`Сортировка: ${sortBy === 'created' ? 'По дате' : sortBy === 'priority' ? 'По приоритету' : 'По дедлайну'}`}
+          >
+            <SortAsc className="w-5 h-5" />
+          </motion.button>
+          
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={() => {
+              hapticFeedback && hapticFeedback('impact', 'light');
+              setShowQuickActions(!showQuickActions);
+            }}
+            className={`p-2 rounded-xl transition-colors ${
+              showQuickActions
+                ? 'bg-orange-100 text-orange-600'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+            title="Быстрые действия"
+          >
+            <Zap className="w-5 h-5" />
+          </motion.button>
         </div>
       </div>
+
+      {/* Панель фильтров */}
+      {showFilters && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          exit={{ opacity: 0, height: 0 }}
+          className="mb-4 space-y-3 overflow-hidden"
+        >
+          {/* Фильтр по категориям */}
+          <div>
+            <p className="text-xs font-medium text-gray-500 mb-2">Категории</p>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => {
+                  setSelectedCategory(null);
+                  hapticFeedback && hapticFeedback('selection');
+                }}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                  !selectedCategory
+                    ? 'bg-gray-200 text-gray-800'
+                    : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                }`}
+              >
+                Все
+              </button>
+              {categories.map(cat => (
+                <button
+                  key={cat.id}
+                  onClick={() => {
+                    setSelectedCategory(selectedCategory === cat.id ? null : cat.id);
+                    hapticFeedback && hapticFeedback('selection');
+                  }}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                    selectedCategory === cat.id
+                      ? `bg-gradient-to-r ${cat.color} text-white`
+                      : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  {cat.emoji} {cat.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Фильтр по приоритетам */}
+          <div>
+            <p className="text-xs font-medium text-gray-500 mb-2">Приоритеты</p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  setSelectedPriority(null);
+                  hapticFeedback && hapticFeedback('selection');
+                }}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                  !selectedPriority
+                    ? 'bg-gray-200 text-gray-800'
+                    : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                }`}
+              >
+                Все
+              </button>
+              <button
+                onClick={() => {
+                  setSelectedPriority(selectedPriority === 'high' ? null : 'high');
+                  hapticFeedback && hapticFeedback('selection');
+                }}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                  selectedPriority === 'high'
+                    ? 'bg-red-500 text-white'
+                    : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                }`}
+              >
+                🔥 Высокий
+              </button>
+              <button
+                onClick={() => {
+                  setSelectedPriority(selectedPriority === 'medium' ? null : 'medium');
+                  hapticFeedback && hapticFeedback('selection');
+                }}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                  selectedPriority === 'medium'
+                    ? 'bg-yellow-500 text-white'
+                    : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                }`}
+              >
+                ⚡️ Средний
+              </button>
+              <button
+                onClick={() => {
+                  setSelectedPriority(selectedPriority === 'low' ? null : 'low');
+                  hapticFeedback && hapticFeedback('selection');
+                }}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                  selectedPriority === 'low'
+                    ? 'bg-green-500 text-white'
+                    : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                }`}
+              >
+                ✅ Низкий
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Панель быстрых действий */}
+      {showQuickActions && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          exit={{ opacity: 0, height: 0 }}
+          className="mb-4 overflow-hidden"
+        >
+          <div className="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-2xl p-4 border border-orange-200/50">
+            <div className="flex items-center gap-2 mb-3">
+              <Zap className="w-4 h-4 text-orange-600" />
+              <p className="text-sm font-bold text-gray-800">Быстрые шаблоны</p>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {quickActionTemplates.map((template, idx) => (
+                <motion.button
+                  key={idx}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => handleQuickAction(template)}
+                  className="p-3 bg-white rounded-xl text-left hover:shadow-md transition-shadow border border-gray-100"
+                >
+                  <div className="text-lg mb-1">{template.icon}</div>
+                  <p className="text-xs font-medium text-gray-800 leading-tight">
+                    {template.text}
+                  </p>
+                </motion.button>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+      )}
 
       {/* Карточка с задачами на сегодня */}
       <div className="flex gap-4">
