@@ -291,6 +291,14 @@ export const TasksSection = () => {
           </p>
         </div>
       </div>
+
+      {/* Модальное окно добавления задачи */}
+      <AddTaskModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onAddTask={handleAddTask}
+        hapticFeedback={hapticFeedback}
+      />
     </motion.div>
   );
 };
