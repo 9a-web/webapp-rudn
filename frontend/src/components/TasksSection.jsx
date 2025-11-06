@@ -50,7 +50,7 @@ export const TasksSection = () => {
 
   const toggleTask = async (taskId) => {
     try {
-      hapticFeedback?.impactOccurred('light');
+      hapticFeedback && hapticFeedback('impact', 'light');
       const task = tasks.find(t => t.id === taskId);
       const updatedTask = await tasksAPI.updateTask(taskId, { completed: !task.completed });
       setTasks(tasks.map(t => t.id === taskId ? updatedTask : t));
@@ -62,14 +62,14 @@ export const TasksSection = () => {
   const handleStartEdit = (task) => {
     setEditingTaskId(task.id);
     setEditingText(task.text);
-    hapticFeedback?.impactOccurred('light');
+    hapticFeedback && hapticFeedback('impact', 'light');
   };
 
   const handleSaveEdit = async (taskId) => {
     if (!editingText.trim()) return;
     
     try {
-      hapticFeedback?.impactOccurred('medium');
+      hapticFeedback && hapticFeedback('impact', 'medium');
       const updatedTask = await tasksAPI.updateTask(taskId, { text: editingText.trim() });
       setTasks(tasks.map(t => t.id === taskId ? updatedTask : t));
       setEditingTaskId(null);
