@@ -3,13 +3,14 @@ import { motion, PanInfo } from 'framer-motion';
 import { ClipboardList, Check, Plus, Edit2, Trash2, X } from 'lucide-react';
 import { tasksAPI } from '../services/api';
 import { useTelegram } from '../contexts/TelegramContext';
+import { AddTaskModal } from './AddTaskModal';
 
 export const TasksSection = () => {
   const { user, hapticFeedback } = useTelegram();
   
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [newTaskText, setNewTaskText] = useState('');
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingTaskId, setEditingTaskId] = useState(null);
   const [editingText, setEditingText] = useState('');
 
