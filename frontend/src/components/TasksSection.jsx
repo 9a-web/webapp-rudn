@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, PanInfo } from 'framer-motion';
-import { ClipboardList, Check, Plus, Edit2, Trash2, X } from 'lucide-react';
+import { ClipboardList, Check, Plus, Edit2, Trash2, X, Flag, Calendar, AlertCircle } from 'lucide-react';
 import { tasksAPI } from '../services/api';
 import { useTelegram } from '../contexts/TelegramContext';
 import { AddTaskModal } from './AddTaskModal';
@@ -13,6 +13,46 @@ export const TasksSection = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingTaskId, setEditingTaskId] = useState(null);
   const [editingText, setEditingText] = useState('');
+  const [scheduleSubjects, setScheduleSubjects] = useState([]);
+  
+  // Категории задач с эмодзи
+  const getCategoryEmoji = (category) => {
+    const categories = {
+      'study': '📚',
+      'personal': '🏠',
+      'sport': '🏃',
+      'project': '💼',
+    };
+    return categories[category] || '';
+  };
+  
+  // Цвет приоритета
+  const getPriorityColor = (priority) => {
+    const colors = {
+      'low': 'text-green-600',
+      'medium': 'text-yellow-600',
+      'high': 'text-red-600',
+    };
+    return colors[priority] || colors['medium'];
+  };
+  
+  // Проверка дедлайна
+  const getDeadlineStatus = (deadline) => {
+    if (!deadline) return null;
+    
+    const now = new Date();
+    const deadlineDate = new Date(deadline);
+    const diffHours = (deadlineDate - now) / (1000 * 60 * 60);
+    
+    if (diffHours < 0) {
+      return { text: 'Просрочено', color: 'text-red-600', bgColor: 'bg-red-50' };
+    } else if (diffHours < 24) {
+      return { text: 'Сегодня', color: 'text-orange-600', bgColor: 'bg-orange-50' };
+    } else if (diffHours < 48) {
+      return { text: 'Завтра', color: 'text-yellow-600', bgColor: 'bg-yellow-50' };
+    }
+    return { text: deadlineDate.toLocaleDateString('ru-RU'), color: 'text-gray-600', bgColor: 'bg-gray-50' };
+  };
 
   // Загрузка задач при монтировании
   useEffect(() => {
