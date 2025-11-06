@@ -306,6 +306,14 @@ class Task(BaseModel):
     telegram_id: int
     text: str
     completed: bool = False
+    
+    # Новые поля
+    category: Optional[str] = None  # Категория: 'study', 'personal', 'sport', 'project'
+    priority: Optional[str] = 'medium'  # Приоритет: 'low', 'medium', 'high'
+    deadline: Optional[datetime] = None  # Дедлайн задачи
+    subject: Optional[str] = None  # Привязка к предмету из расписания
+    discipline_id: Optional[str] = None  # ID дисциплины (для интеграции с расписанием)
+    
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
@@ -314,12 +322,22 @@ class TaskCreate(BaseModel):
     """Запрос создания задачи"""
     telegram_id: int
     text: str
+    category: Optional[str] = None
+    priority: Optional[str] = 'medium'
+    deadline: Optional[datetime] = None
+    subject: Optional[str] = None
+    discipline_id: Optional[str] = None
 
 
 class TaskUpdate(BaseModel):
     """Запрос обновления задачи"""
     text: Optional[str] = None
     completed: Optional[bool] = None
+    category: Optional[str] = None
+    priority: Optional[str] = None
+    deadline: Optional[datetime] = None
+    subject: Optional[str] = None
+    discipline_id: Optional[str] = None
 
 
 class TaskResponse(BaseModel):
@@ -328,5 +346,10 @@ class TaskResponse(BaseModel):
     telegram_id: int
     text: str
     completed: bool
+    category: Optional[str] = None
+    priority: Optional[str] = 'medium'
+    deadline: Optional[datetime] = None
+    subject: Optional[str] = None
+    discipline_id: Optional[str] = None
     created_at: datetime
     updated_at: datetime
