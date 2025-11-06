@@ -296,3 +296,37 @@ class BotInfo(BaseModel):
     can_join_groups: bool = False
     can_read_all_group_messages: bool = False
     supports_inline_queries: bool = False
+
+
+# ============ Модели для списка дел ============
+
+class Task(BaseModel):
+    """Модель задачи"""
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    telegram_id: int
+    text: str
+    completed: bool = False
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class TaskCreate(BaseModel):
+    """Запрос создания задачи"""
+    telegram_id: int
+    text: str
+
+
+class TaskUpdate(BaseModel):
+    """Запрос обновления задачи"""
+    text: Optional[str] = None
+    completed: Optional[bool] = None
+
+
+class TaskResponse(BaseModel):
+    """Ответ с задачей"""
+    id: str
+    telegram_id: int
+    text: str
+    completed: bool
+    created_at: datetime
+    updated_at: datetime
