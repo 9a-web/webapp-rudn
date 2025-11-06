@@ -260,36 +260,16 @@ export const TasksSection = () => {
             )}
           </div>
 
-          {/* Input для добавления новой задачи */}
+          {/* Кнопка добавления новой задачи */}
           <div className="mt-3 pt-3 border-t border-yellow-200/30">
-            <div className="flex items-center gap-2">
-              <input
-                type="text"
-                value={newTaskText}
-                onChange={(e) => setNewTaskText(e.target.value)}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    handleAddTask();
-                  }
-                }}
-                placeholder="Новая задача..."
-                className="flex-1 text-xs bg-white border border-yellow-200 rounded-lg px-2 py-1.5 focus:outline-none focus:border-yellow-400 placeholder-[#999999]"
-              />
-              <motion.button
-                whileTap={{ scale: 0.9 }}
-                onClick={handleAddTask}
-                disabled={!newTaskText.trim()}
-                className={`
-                  w-7 h-7 rounded-lg flex items-center justify-center transition-all
-                  ${newTaskText.trim()
-                    ? 'bg-gradient-to-br from-yellow-400 to-orange-400 text-white'
-                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                  }
-                `}
-              >
-                <Plus className="w-4 h-4" strokeWidth={2.5} />
-              </motion.button>
-            </div>
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={handleOpenAddModal}
+              className="w-full py-2 bg-gradient-to-br from-yellow-400 to-orange-400 text-white rounded-lg flex items-center justify-center gap-2 font-medium text-xs shadow-sm hover:shadow-md transition-shadow"
+            >
+              <Plus className="w-4 h-4" strokeWidth={2.5} />
+              Добавить задачу
+            </motion.button>
             
             {/* Счетчик */}
             <p className="text-xs text-[#999999] text-center mt-2">
