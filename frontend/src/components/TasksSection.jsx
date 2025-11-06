@@ -176,8 +176,119 @@ export const TasksSection = ({ userSettings, selectedDate, weekNumber }) => {
     }
   };
 
-  // Фильтруем задачи на сегодня
-  const todayTasks = tasks.slice(0, 10); // Показываем последние 10 задач
+  // Шаблоны быстрых задач
+  const quickActionTemplates = [
+    { 
+      text: 'Подготовиться к лекции', 
+      category: 'study', 
+      priority: 'medium',
+      icon: '📖'
+    },
+    { 
+      text: 'Сдать лабораторную работу', 
+      category: 'study', 
+      priority: 'high',
+      icon: '🔬'
+    },
+    { 
+      text: 'Повторить материал', 
+      category: 'study', 
+      priority: 'medium',
+      icon: '📝'
+    },
+    { 
+      text: 'Выполнить домашнее задание', 
+      category: 'study', 
+      priority: 'high',
+      icon: '✏️'
+    },
+  ];
+
+  // Создание задачи из шаблона
+  const handleQuickAction = async (template) => {
+    try {
+      hapticFeedback && hapticFeedback('impact', 'medium');
+      const newTask = await tasksAPI.createTask(user.id, template.text, {
+        category: template.category,
+        priority: template.priority,
+      });
+      setTasks([newTask, ...tasks]);
+      setShowQuickActions(false);
+    } catch (error) {
+      console.error('Error creating quick task:', error);
+    }
+  };
+
+  // Фильтрация и сортировка задач
+  const getFilteredAndSortedTasks = () => {
+    let filtered = [...tasks];
+    
+    // Фильтр по категории
+    if (selectedCategory) {
+      filtered = filtered.filter(t => t.category === selectedCategory);
+    }
+    
+    // Фильтр по приоритету
+    if (selectedPriority) {
+      filtered = filtered.filter(t => t.priority === selectedPriority);
+    }
+    
+    // Сортировка
+    filtered.sort((a, b) => {
+      if (sortBy === 'priority') {
+        const priorityOrder = { high: 3, medium: 2, low: 1 };
+        return (priorityOrder[b.priority] || 2) - (priorityOrder[a.priority] || 2);
+      } else if (sortBy === 'deadline') {
+        if (!a.deadline && !b.deadline) return 0;
+        if (!a.deadline) return 1;
+        if (!b.deadline) return -1;
+        return new Date(a.deadline) - new Date(b.deadline);
+      } else {
+        // По умолчанию - по дате создания (новые сверху)
+        return new Date(b.created_at) - new Date(a.created_at);
+      }
+    });
+    
+    return filtered;
+  };
+
+  // Группировка задач по срокам
+  const groupTasksByDeadline = () => {
+    const filteredTasks = getFilteredAndSortedTasks();
+    const now = new Date();
+    
+    const overdue = [];
+    const today = [];
+    const thisWeek = [];
+    const later = [];
+    const noDeadline = [];
+    
+    filteredTasks.forEach(task => {
+      if (!task.deadline) {
+        noDeadline.push(task);
+        return;
+      }
+      
+      const deadline = new Date(task.deadline);
+      const diffHours = (deadline - now) / (1000 * 60 * 60);
+      const diffDays = diffHours / 24;
+      
+      if (diffHours < 0) {
+        overdue.push(task);
+      } else if (diffHours < 24) {
+        today.push(task);
+      } else if (diffDays < 7) {
+        thisWeek.push(task);
+      } else {
+        later.push(task);
+      }
+    });
+    
+    return { overdue, today, thisWeek, later, noDeadline };
+  };
+
+  // Фильтруем задачи для карточки "на сегодня"
+  const todayTasks = getFilteredAndSortedTasks().slice(0, 10);
 
   const currentDate = new Date().toLocaleDateString('ru-RU', {
     day: 'numeric',
