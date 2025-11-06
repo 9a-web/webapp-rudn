@@ -86,7 +86,7 @@ export const TasksSection = () => {
 
   const handleDeleteTask = async (taskId) => {
     try {
-      hapticFeedback?.impactOccurred('heavy');
+      hapticFeedback && hapticFeedback('impact', 'heavy');
       await tasksAPI.deleteTask(taskId);
       setTasks(tasks.filter(t => t.id !== taskId));
     } catch (error) {
