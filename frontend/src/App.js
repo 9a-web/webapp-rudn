@@ -586,7 +586,7 @@ const Home = () => {
       {!showGroupSelector && userSettings && (
         <BottomNavigation 
           activeTab={activeTab}
-          onTabChange={setActiveTab}
+          onTabChange={handleTabChange}
           hapticFeedback={hapticFeedback}
         />
       )}
