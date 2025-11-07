@@ -598,6 +598,18 @@ export const TasksSection = ({ userSettings, selectedDate, weekNumber }) => {
                         // Обычный режим
                         <div className="flex flex-col gap-1.5">
                           <div className="flex items-start gap-2">
+                            {/* Drag Handle (3 полоски) */}
+                            <Reorder.Item
+                              value={task}
+                              dragListener={true}
+                              className="flex-shrink-0 cursor-grab active:cursor-grabbing mt-0.5"
+                              onDragStart={() => {
+                                hapticFeedback && hapticFeedback('impact', 'light');
+                              }}
+                            >
+                              <GripVertical className="w-4 h-4 text-gray-400 hover:text-gray-600 transition-colors" />
+                            </Reorder.Item>
+                            
                             {/* Checkbox */}
                             <div 
                               onClick={() => toggleTask(task.id)}
