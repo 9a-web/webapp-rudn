@@ -49,7 +49,7 @@ export const BottomNavigation = ({ activeTab = 'home', onTabChange, hapticFeedba
       transition={{ duration: 0.3, ease: 'easeInOut' }}
       className="fixed bottom-4 z-50"
       style={{ 
-        width: '370px', 
+        width: '280px', 
         height: '50px',
         left: '50%',
         overflow: 'visible'
