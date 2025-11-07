@@ -421,7 +421,7 @@ const Home = () => {
   // Показываем ошибку
   if (error && !userSettings) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="h-full min-h-screen bg-background flex items-center justify-center p-4">
         <div className="text-center">
           <p className="text-red-400 mb-4">{error}</p>
           <button
@@ -436,7 +436,7 @@ const Home = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background telegram-webapp relative">
+    <div className="h-full min-h-screen bg-background telegram-webapp relative">
       <TopGlow />
       
       {/* Adaptive container with responsive max-width */}
