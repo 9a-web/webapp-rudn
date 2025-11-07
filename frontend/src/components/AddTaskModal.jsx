@@ -154,8 +154,9 @@ export const AddTaskModal = ({
             </div>
           </div>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Form - прокручиваемый контент */}
+          <div className="flex-1 overflow-y-auto overscroll-contain">
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5 px-4 sm:px-6 py-4 sm:py-5">
             {/* Описание задачи */}
             <div>
               <label className="block text-sm font-medium text-[#1C1C1E] mb-2">
