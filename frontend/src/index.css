@@ -75,10 +75,11 @@
 
 html {
   scroll-behavior: smooth;
-  /* ПОЛНОЭКРАННЫЙ РЕЖИМ */
+  /* ⭐️ ПОЛНОЭКРАННЫЙ РЕЖИМ для Telegram Web App */
   height: 100%;
   height: 100vh;
   height: 100dvh; /* Dynamic viewport height (новый стандарт) */
+  height: var(--tg-viewport-height, 100vh); /* Приоритет Telegram viewport */
   width: 100%;
   width: 100vw;
   overflow-x: hidden;
@@ -94,7 +95,7 @@ body {
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
   
-  /* ПОЛНОЭКРАННЫЙ РЕЖИМ с учётом safe area */
+  /* ⭐️ ПОЛНОЭКРАННЫЙ РЕЖИМ с учётом Telegram viewport */
   position: fixed;
   top: 0;
   left: 0;
@@ -103,19 +104,19 @@ body {
   height: 100%;
   height: 100vh;
   height: 100dvh; /* Dynamic viewport height - учитывает mobile browser bars */
+  height: var(--tg-viewport-height, 100vh); /* ⭐️ Используем Telegram viewport */
   min-height: 100vh;
   min-height: -webkit-fill-available;
+  min-height: var(--tg-viewport-height, 100vh);
   width: 100%;
   width: 100vw;
   max-width: 100vw;
   overflow-x: hidden;
   overflow-y: auto;
   
-  /* Поддержка iOS safe area (отступы для вырезов экрана) */
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
-  padding-left: env(safe-area-inset-left);
-  padding-right: env(safe-area-inset-right);
+  /* ⭐️ НЕ используем safe area padding для чистого Full Screen */
+  /* Telegram Web App сам управляет safe area */
+  padding: 0;
   
   /* Отключаем bounce эффект на iOS */
   overscroll-behavior: none;
