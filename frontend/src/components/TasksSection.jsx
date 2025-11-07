@@ -555,67 +555,25 @@ export const TasksSection = ({ userSettings, selectedDate, weekNumber, onModalSt
                 axis="y" 
                 values={todayTasks} 
                 onReorder={handleReorderTasks}
+                className="space-y-2"
               >
-                {todayTasks.map((task) => {
-                  const isEditing = editingTaskId === task.id;
-                  
-                  return (
-                    <Reorder.Item
-                      key={task.id}
-                      value={task}
-                      dragListener={false}
-                      className="relative mb-2"
-                    >
-                      {/* Контент задачи */}
-                      <motion.div
-                        whileTap={{ scale: 0.98 }}
-                        className="relative bg-white rounded-lg p-2 group shadow-sm"
-                      >
-                      {isEditing ? (
-                        // Режим редактирования
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="text"
-                            value={editingText}
-                            onChange={(e) => setEditingText(e.target.value)}
-                            onKeyPress={(e) => {
-                              if (e.key === 'Enter') {
-                                handleSaveEdit(task.id);
-                              } else if (e.key === 'Escape') {
-                                handleCancelEdit();
-                              }
-                            }}
-                            className="flex-1 text-xs bg-white border border-yellow-300 rounded px-2 py-1 focus:outline-none focus:border-yellow-400"
-                            autoFocus
-                          />
-                          <button
-                            onClick={() => handleSaveEdit(task.id)}
-                            className="p-1 text-green-600 hover:bg-green-100 rounded"
-                          >
-                            <Check className="w-3 h-3" />
-                          </button>
-                          <button
-                            onClick={handleCancelEdit}
-                            className="p-1 text-red-600 hover:bg-red-100 rounded"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        </div>
-                      ) : (
-                        // Обычный режим
-                        <div className="flex flex-col gap-1.5">
-                          <div className="flex items-start gap-2">
-                            {/* Drag Handle (3 полоски) */}
-                            <Reorder.Item
-                              value={task}
-                              dragListener={true}
-                              className="flex-shrink-0 cursor-grab active:cursor-grabbing mt-0.5"
-                              onDragStart={() => {
-                                hapticFeedback && hapticFeedback('impact', 'light');
-                              }}
-                            >
-                              <GripVertical className="w-4 h-4 text-gray-400 hover:text-gray-600 transition-colors" />
-                            </Reorder.Item>
+                {todayTasks.map((task) => (
+                  <TodayTaskItem
+                    key={task.id}
+                    task={task}
+                    isEditing={editingTaskId === task.id}
+                    editingText={editingText}
+                    setEditingText={setEditingText}
+                    onToggle={toggleTask}
+                    onSaveEdit={handleSaveEdit}
+                    onCancelEdit={handleCancelEdit}
+                    onDelete={handleDeleteTask}
+                    getCategoryEmoji={getCategoryEmoji}
+                    getPriorityColor={getPriorityColor}
+                    getDeadlineStatus={getDeadlineStatus}
+                    hapticFeedback={hapticFeedback}
+                  />
+                ))}
                             
                             {/* Checkbox */}
                             <div 
