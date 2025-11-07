@@ -187,6 +187,8 @@ class NotificationSettingsResponse(BaseModel):
     notifications_enabled: bool
     notification_time: int
     telegram_id: int
+    test_notification_sent: Optional[bool] = None
+    test_notification_error: Optional[str] = None
 
 
 
