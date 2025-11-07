@@ -813,12 +813,14 @@ const TodayTaskItem = ({
               {/* Drag Handle (3 полоски) */}
               <div
                 onPointerDown={(e) => {
+                  e.stopPropagation();
+                  if (hapticFeedback) hapticFeedback('impact', 'light');
                   dragControls.start(e);
-                  hapticFeedback && hapticFeedback('impact', 'light');
                 }}
-                className="flex-shrink-0 cursor-grab active:cursor-grabbing mt-0.5 touch-none"
+                className="flex-shrink-0 cursor-grab active:cursor-grabbing mt-0.5 touch-none select-none"
+                style={{ touchAction: 'none' }}
               >
-                <GripVertical className="w-4 h-4 text-gray-400 hover:text-gray-600 transition-colors" />
+                <GripVertical className="w-4 h-4 text-gray-400 hover:text-gray-600 transition-colors pointer-events-none" />
               </div>
               
               {/* Checkbox */}
