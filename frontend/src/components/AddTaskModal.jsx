@@ -130,21 +130,28 @@ export const AddTaskModal = ({
           onDragEnd={handleDragEnd}
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-yellow-400 to-orange-400 flex items-center justify-center">
-                <Plus className="w-5 h-5 text-white" strokeWidth={2.5} />
+          {/* Drag indicator (для мобильных) */}
+          <div className="sm:hidden flex justify-center pt-3 pb-2 cursor-grab active:cursor-grabbing">
+            <div className="w-10 h-1 bg-gray-300 rounded-full" />
+          </div>
+
+          {/* Header - фиксированный */}
+          <div className="flex-shrink-0 px-4 sm:px-6 pt-3 pb-4 border-b border-gray-100">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5 sm:gap-3">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-br from-yellow-400 to-orange-400 flex items-center justify-center flex-shrink-0">
+                  <Plus className="w-4 h-4 sm:w-5 sm:h-5 text-white" strokeWidth={2.5} />
+                </div>
+                <h2 className="text-lg sm:text-xl font-bold text-[#1C1C1E]">Новая задача</h2>
               </div>
-              <h2 className="text-xl font-bold text-[#1C1C1E]">Новая задача</h2>
+              <button
+                onClick={handleClose}
+                disabled={saving}
+                className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 active:bg-gray-300 flex items-center justify-center transition-colors disabled:opacity-50 flex-shrink-0"
+              >
+                <X className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
+              </button>
             </div>
-            <button
-              onClick={handleClose}
-              disabled={saving}
-              className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors disabled:opacity-50"
-            >
-              <X className="w-5 h-5 text-gray-600" />
-            </button>
           </div>
 
           {/* Form */}
