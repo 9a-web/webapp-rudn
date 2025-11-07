@@ -41,8 +41,12 @@ export const BottomNavigation = ({ activeTab = 'home', onTabChange, hapticFeedba
   return (
     <motion.nav
       initial={{ y: 100, opacity: 0, x: '-50%' }}
-      animate={{ y: 0, opacity: 1, x: '-50%' }}
-      transition={{ duration: 0.4, ease: 'easeOut' }}
+      animate={{ 
+        y: isHidden ? 100 : 0, 
+        opacity: isHidden ? 0 : 1, 
+        x: '-50%' 
+      }}
+      transition={{ duration: 0.3, ease: 'easeInOut' }}
       className="fixed bottom-4 z-50"
       style={{ 
         width: '370px', 
