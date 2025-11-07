@@ -54,13 +54,24 @@ export const NotificationSettings = ({
       setSaving(true);
       hapticFeedback && hapticFeedback('impact', 'medium');
       
-      await userAPI.updateNotificationSettings(telegramId, {
+      const response = await userAPI.updateNotificationSettings(telegramId, {
         notifications_enabled: enabled,
         notification_time: notificationTime,
       });
       
-      // Отслеживаем настройку уведомлений
+      // Проверяем статус тестового уведомления
       if (enabled) {
+        if (response.test_notification_sent === false) {
+          // Тестовое уведомление не отправлено
+          showAlert && showAlert(
+            `⚠️ Настройки сохранены, но не удалось отправить тестовое уведомление.\n\n` +
+            `Пожалуйста, начните диалог с ботом @rudn_pro_bot в Telegram командой /start`
+          );
+          setSaving(false);
+          return; // Не закрываем модальное окно, чтобы пользователь увидел предупреждение
+        }
+        
+        // Отслеживаем настройку уведомлений
         try {
           const result = await achievementsAPI.trackAction(telegramId, 'configure_notifications', {
             notification_time: notificationTime,
@@ -74,13 +85,14 @@ export const NotificationSettings = ({
         } catch (error) {
           console.error('Failed to track configure_notifications action:', error);
         }
+        
+        showAlert && showAlert(
+          `✅ Уведомления включены! Напоминание за ${notificationTime} ${pluralizeMinutes(notificationTime)}\n\n` +
+          `Тестовое уведомление отправлено в бот @rudn_pro_bot`
+        );
+      } else {
+        showAlert && showAlert('🔕 Уведомления выключены');
       }
-
-      showAlert && showAlert(
-        enabled 
-          ? `✅ Уведомления включены! Напоминание за ${notificationTime} ${pluralizeMinutes(notificationTime)}` 
-          : '🔕 Уведомления выключены'
-      );
       
       // Закрываем окно после успешного сохранения
       setSaving(false);
