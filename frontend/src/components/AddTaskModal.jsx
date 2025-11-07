@@ -83,12 +83,23 @@ export const AddTaskModal = ({
 
   const handleClose = () => {
     if (saving) return; // Не закрываем во время сохранения
+    hapticFeedback && hapticFeedback('impact', 'light');
     setTaskText('');
     setCategory(null);
     setPriority('medium');
     setDeadline('');
     setSubject('');
+    setDragY(0);
     onClose();
+  };
+  
+  // Обработка свайпа вниз для закрытия
+  const handleDragEnd = (event, info) => {
+    if (info.offset.y > 100) {
+      handleClose();
+    } else {
+      setDragY(0);
+    }
   };
 
   if (!isOpen) return null;
