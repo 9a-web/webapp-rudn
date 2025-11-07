@@ -897,7 +897,7 @@ const TodayTaskItem = ({
             </div>
           </div>
         )}
-      </motion.div>
+      </div>
     </Reorder.Item>
   );
 };
