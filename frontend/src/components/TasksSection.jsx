@@ -769,11 +769,10 @@ const TodayTaskItem = ({
 
   return (
     <Reorder.Item
-      key={task.id}
       value={task}
       dragListener={false}
       dragControls={dragControls}
-      className="relative"
+      className="relative mb-2"
     >
       {/* Контент задачи */}
       <div className="relative bg-white rounded-lg p-2 group shadow-sm"
