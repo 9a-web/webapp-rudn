@@ -292,3 +292,93 @@ const handleReorderTasks = (newOrder) => {
 - ✅ Точный контроль drag области
 - ✅ Независимость других интерактивных элементов
 - ✅ Лучший UX с haptic feedback
+
+---
+
+## 🔧 Финальное исправление (06.11.2024)
+
+### Проблема в TaskGroup
+
+В основном списке задач (компонент `TaskGroup`) обнаружена та же проблема - вложенный `Reorder.Item` для drag handle (строки 1026-1035 в TasksSection.jsx):
+
+```jsx
+// ❌ НЕПРАВИЛЬНО - внутри Reorder.Item был еще один вложенный Reorder.Item
+<Reorder.Item value={task} dragListener={false}>
+  <div className="flex items-start gap-3">
+    <Reorder.Item value={task} dragListener={true}>  {/* ❌ Вложенный! */}
+      <GripVertical />
+    </Reorder.Item>
+    {/* ... остальной контент */}
+  </div>
+</Reorder.Item>
+```
+
+### Решение
+
+Создан новый компонент `TaskGroupItem` с правильной реализацией drag and drop (аналогично `TodayTaskItem`):
+
+```jsx
+const TaskGroupItem = ({ task, ... }) => {
+  const dragControls = useDragControls();  // ✅ Используем hook
+
+  return (
+    <Reorder.Item
+      value={task}
+      dragListener={false}
+      dragControls={dragControls}  // ✅ Передаем controls
+    >
+      <motion.div className="bg-white rounded-lg p-3">
+        <div className="flex items-start gap-3">
+          {/* ✅ Drag Handle с onPointerDown */}
+          <div
+            onPointerDown={(e) => {
+              e.stopPropagation();
+              if (hapticFeedback) hapticFeedback('impact', 'light');
+              dragControls.start(e);
+            }}
+            className="cursor-grab active:cursor-grabbing touch-none"
+            style={{ touchAction: 'none' }}
+          >
+            <GripVertical className="w-4 h-4" />
+          </div>
+          
+          {/* Checkbox, текст, кнопки */}
+          {/* ... */}
+        </div>
+      </motion.div>
+    </Reorder.Item>
+  );
+};
+```
+
+### Интеграция в TaskGroup
+
+Теперь `TaskGroup` использует новый компонент:
+
+```jsx
+<Reorder.Group axis="y" values={localTasks} onReorder={handleReorder}>
+  {localTasks.map((task) => (
+    <TaskGroupItem
+      key={task.id}
+      task={task}
+      isEditing={editingTaskId === task.id}
+      // ... остальные пропсы
+    />
+  ))}
+</Reorder.Group>
+```
+
+### Результат
+
+✅ Теперь drag and drop работает **везде**:
+- ✅ В карточке "Сегодня" (компонент `TodayTaskItem`)
+- ✅ В основном списке задач (компонент `TaskGroupItem`)
+- ✅ На мобильных устройствах с haptic feedback
+- ✅ Независимая работа checkbox и кнопок удаления
+
+### Файлы изменены
+
+- `/app/frontend/src/components/TasksSection.jsx`
+  - Добавлен компонент `TaskGroupItem` с правильной реализацией drag and drop
+  - Упрощен рендеринг в `TaskGroup` - убран вложенный `Reorder.Item`
+  - Код скомпилирован успешно ✅
