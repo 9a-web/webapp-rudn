@@ -445,6 +445,33 @@ export const TasksSection = ({ userSettings, selectedDate, weekNumber, onModalSt
   const handleDateSelect = (date) => {
     setTasksSelectedDate(date);
   };
+  
+  // Определяем заголовок для группы задач на выбранную дату
+  const getTaskGroupTitle = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const selected = new Date(tasksSelectedDate);
+    selected.setHours(0, 0, 0, 0);
+    
+    if (selected.getTime() === today.getTime()) {
+      return 'Сегодня';
+    }
+    
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    if (selected.getTime() === tomorrow.getTime()) {
+      return 'Завтра';
+    }
+    
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    if (selected.getTime() === yesterday.getTime()) {
+      return 'Вчера';
+    }
+    
+    // Для других дней показываем "На эту дату"
+    return 'На эту дату';
+  };
 
   const groupedTasks = groupTasksByDeadline();
   const categories = [
