@@ -366,6 +366,34 @@ export const TasksSection = ({ userSettings, selectedDate, weekNumber, onModalSt
     month: 'long'
   });
   
+  // Определяем название для карточки задач
+  const getCardTitle = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const selected = new Date(tasksSelectedDate);
+    selected.setHours(0, 0, 0, 0);
+    
+    if (selected.getTime() === today.getTime()) {
+      return 'Сегодня';
+    }
+    
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    if (selected.getTime() === tomorrow.getTime()) {
+      return 'Завтра';
+    }
+    
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    if (selected.getTime() === yesterday.getTime()) {
+      return 'Вчера';
+    }
+    
+    // Для других дней показываем день недели
+    const dayNames = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
+    return dayNames[selected.getDay()];
+  };
+  
   // Обработчик выбора даты
   const handleDateSelect = (date) => {
     setTasksSelectedDate(date);
