@@ -638,7 +638,7 @@ export const TasksSection = ({ userSettings, selectedDate, weekNumber, onModalSt
         >
           {/* Заголовок карточки */}
           <div className="mb-3">
-            <h3 className="text-sm font-bold text-[#1C1C1E]">Сегодня</h3>
+            <h3 className="text-sm font-bold text-[#1C1C1E]">{getCardTitle()}</h3>
             <p className="text-xs text-[#999999] mt-0.5">{currentDate}</p>
           </div>
 
