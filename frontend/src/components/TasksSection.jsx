@@ -343,9 +343,19 @@ export const TasksSection = ({ userSettings, selectedDate, weekNumber, onModalSt
   const getTasksForSelectedDate = () => {
     const selectedDateStr = tasksSelectedDate.toISOString().split('T')[0];
     return getFilteredAndSortedTasks().filter(task => {
-      if (!task.created_at) return false;
-      const taskDate = new Date(task.created_at).toISOString().split('T')[0];
-      return taskDate === selectedDateStr;
+      // Проверяем created_at
+      if (task.created_at) {
+        const taskCreatedDate = new Date(task.created_at).toISOString().split('T')[0];
+        if (taskCreatedDate === selectedDateStr) return true;
+      }
+      
+      // Проверяем deadline
+      if (task.deadline) {
+        const taskDeadlineDate = new Date(task.deadline).toISOString().split('T')[0];
+        if (taskDeadlineDate === selectedDateStr) return true;
+      }
+      
+      return false;
     }).slice(0, 10);
   };
   
