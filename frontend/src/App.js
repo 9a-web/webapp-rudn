@@ -223,7 +223,7 @@ const Home = () => {
     }
   }, [schedule]);
 
-  const updateCurrentClass = () => {
+  const updateCurrentClass = useCallback(() => {
     const now = new Date();
     const currentDay = now.toLocaleDateString('ru-RU', { weekday: 'long' });
     const dayName = currentDay.charAt(0).toUpperCase() + currentDay.slice(1);
@@ -249,7 +249,7 @@ const Home = () => {
 
     setCurrentClass(null);
     setMinutesLeft(0);
-  };
+  }, [schedule]);
 
   const handleGroupSelected = async (groupData) => {
     try {
