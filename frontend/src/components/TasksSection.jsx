@@ -350,18 +350,24 @@ export const TasksSection = ({ userSettings, selectedDate, weekNumber, onModalSt
     const selectedDateEnd = new Date(tasksSelectedDate);
     selectedDateEnd.setHours(23, 59, 59, 999);
     
+    // Сегодняшняя дата для проверки задач без дедлайна
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    
     const allTasks = [];
     
     filteredTasks.forEach(task => {
-      // Включаем задачи без дедлайна
+      // Задачи без дедлайна показываем ТОЛЬКО на сегодняшний день
       if (!task.deadline) {
-        allTasks.push(task);
+        if (selectedDateStart.getTime() === todayStart.getTime()) {
+          allTasks.push(task);
+        }
         return;
       }
       
       const deadline = new Date(task.deadline);
       
-      // Показываем задачи с дедлайном на выбранную дату
+      // Показываем задачи с дедлайном только на ту дату, на которую установлен дедлайн
       if (deadline >= selectedDateStart && deadline <= selectedDateEnd) {
         allTasks.push(task);
       }
