@@ -493,16 +493,20 @@ async def mark_achievements_seen_endpoint(telegram_id: int):
 # ============ Эндпоинты для погоды ============
 
 @api_router.get("/weather", response_model=WeatherResponse)
-@cache(ttl=600)  # Кешируем на 10 минут
 async def get_weather_endpoint():
-    """Получить текущую погоду в Москве"""
+    """Получить текущую погоду в Москве (с кешированием на 10 минут)"""
+    # Проверяем кеш
+    cached_weather = cache.get("weather")
+    if cached_weather:
+        return cached_weather
+    
     try:
         weather = await get_moscow_weather()
         
         if not weather:
             # Возвращаем mock данные вместо ошибки
             logger.warning("Weather API недоступен, возвращаем mock данные")
-            return WeatherResponse(
+            weather = WeatherResponse(
                 temperature=5,
                 feels_like=2,
                 humidity=85,
@@ -511,6 +515,8 @@ async def get_weather_endpoint():
                 icon="☁️"
             )
         
+        # Кешируем результат на 10 минут
+        cache.set("weather", weather, ttl_minutes=10)
         return weather
     except Exception as e:
         logger.error(f"Ошибка при получении погоды: {e}")
