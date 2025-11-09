@@ -418,6 +418,19 @@ export const tasksAPI = {
       handleError(error);
     }
   },
+
+  /**
+   * Обновить порядок задач (batch update после drag & drop)
+   * @param {Array} taskOrders - Массив объектов [{id: "task_id", order: 0}, ...]
+   */
+  reorderTasks: async (taskOrders) => {
+    try {
+      const response = await api.put('/tasks/reorder', taskOrders);
+      return response.data;
+    } catch (error) {
+      handleError(error);
+    }
+  },
 };
 
 export default api;
