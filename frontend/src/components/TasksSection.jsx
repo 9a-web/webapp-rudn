@@ -720,6 +720,7 @@ export const TasksSection = ({ userSettings, selectedDate, weekNumber, onModalSt
                     editingText={editingText}
                     setEditingText={setEditingText}
                     onToggle={toggleTask}
+                    onEdit={handleOpenEditModal}
                     onSaveEdit={handleSaveEdit}
                     onCancelEdit={handleCancelEdit}
                     onDelete={handleDeleteTask}
