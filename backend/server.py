@@ -59,7 +59,14 @@ from models import (
     GroupTaskInvite,
     GroupTaskInviteCreate,
     GroupTaskInviteResponse,
-    GroupTaskCompleteRequest
+    GroupTaskCompleteRequest,
+    Room,
+    RoomCreate,
+    RoomResponse,
+    RoomParticipant,
+    RoomInviteLinkResponse,
+    RoomJoinRequest,
+    RoomTaskCreate
 )
 from notifications import get_notification_service
 from scheduler import get_scheduler
