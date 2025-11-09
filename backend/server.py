@@ -670,7 +670,16 @@ async def get_user_tasks(telegram_id: int):
 async def create_task(task_data: TaskCreate):
     """Создать новую задачу"""
     try:
-        task = Task(**task_data.dict())
+        # Получаем максимальный order для данного пользователя
+        max_order_task = await db.tasks.find_one(
+            {"telegram_id": task_data.telegram_id},
+            sort=[("order", -1)]
+        )
+        
+        # Присваиваем order = max + 1 (или 0, если задач нет)
+        next_order = (max_order_task.get("order", -1) + 1) if max_order_task else 0
+        
+        task = Task(**task_data.dict(), order=next_order)
         task_dict = task.dict()
         
         await db.tasks.insert_one(task_dict)
