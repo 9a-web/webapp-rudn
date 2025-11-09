@@ -335,9 +335,21 @@ export const TasksSection = ({ userSettings, selectedDate, weekNumber, onModalSt
   const handleQuickAction = async (template) => {
     try {
       hapticFeedback && hapticFeedback('impact', 'medium');
+      
+      // Форматируем target_date для выбранной даты (без UTC конвертации)
+      let targetDateISO = null;
+      if (tasksSelectedDate) {
+        const targetDate = new Date(tasksSelectedDate);
+        const year = targetDate.getFullYear();
+        const month = String(targetDate.getMonth() + 1).padStart(2, '0');
+        const day = String(targetDate.getDate()).padStart(2, '0');
+        targetDateISO = `${year}-${month}-${day}T00:00:00`;
+      }
+      
       const newTask = await tasksAPI.createTask(user.id, template.text, {
         category: template.category,
         priority: template.priority,
+        target_date: targetDateISO,  // Добавляем target_date для привязки к выбранной дате
       });
       setTasks([newTask, ...tasks]);
       setShowQuickActions(false);
