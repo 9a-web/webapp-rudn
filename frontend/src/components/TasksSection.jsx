@@ -21,7 +21,11 @@ export const TasksSection = ({ userSettings, selectedDate, weekNumber, onModalSt
   const [scheduleSubjects, setScheduleSubjects] = useState([]);
   
   // Выбранная дата для отображения задач (по умолчанию - сегодня)
-  const [tasksSelectedDate, setTasksSelectedDate] = useState(new Date());
+  const [tasksSelectedDate, setTasksSelectedDate] = useState(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return today;
+  });
   
   // Фильтры и сортировка
   const [selectedCategory, setSelectedCategory] = useState(null);
