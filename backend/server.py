@@ -683,7 +683,7 @@ async def create_task(task_data: TaskCreate):
 
 @api_router.put("/tasks/{task_id}", response_model=TaskResponse)
 async def update_task(task_id: str, task_update: TaskUpdate):
-    """Обновить задачу (текст или статус completed)"""
+    """Обновить задачу (все поля опциональны)"""
     try:
         # Проверяем существование задачи
         existing_task = await db.tasks.find_one({"id": task_id})
@@ -697,6 +697,18 @@ async def update_task(task_id: str, task_update: TaskUpdate):
             update_data["text"] = task_update.text
         if task_update.completed is not None:
             update_data["completed"] = task_update.completed
+        if task_update.category is not None:
+            update_data["category"] = task_update.category
+        if task_update.priority is not None:
+            update_data["priority"] = task_update.priority
+        if task_update.deadline is not None:
+            update_data["deadline"] = task_update.deadline
+        if task_update.subject is not None:
+            update_data["subject"] = task_update.subject
+        if task_update.discipline_id is not None:
+            update_data["discipline_id"] = task_update.discipline_id
+        if task_update.order is not None:
+            update_data["order"] = task_update.order
         
         update_data["updated_at"] = datetime.utcnow()
         
