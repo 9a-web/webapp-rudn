@@ -524,7 +524,7 @@ export const TasksSection = ({ userSettings, selectedDate, weekNumber, onModalSt
           <div>
             <h2 className="text-2xl font-bold text-[#1C1C1E]">Список дел</h2>
             <p className="text-sm text-[#999999]">
-              {tasks.length} задач · {tasks.filter(t => t.completed).length} выполнено
+              {todayTasks.length} задач · {todayTasks.filter(t => t.completed).length} выполнено
             </p>
           </div>
         </div>
