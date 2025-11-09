@@ -264,6 +264,18 @@ backend:
           agent: "testing"
           comment: "✅ Successfully retrieves user achievements array. Each achievement contains: achievement object (with id, name, description, emoji, points, type, requirement), earned_at timestamp, and seen boolean. Properly handles users with no achievements (returns empty array). Tested with telegram_id 123456789 showing 1 achievement: 'Первопроходец' earned at 2025-10-27T07:58:26.338000."
 
+  - task: "Tasks API - Task Completion Functionality"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ Successfully tested comprehensive task completion functionality. Created test user (telegram_id: 999777555), created 3 tasks for today's date, marked 2 tasks as completed (completed: true), verified task completion status persistence. All CRUD operations working correctly: GET /api/tasks/{telegram_id} (retrieves all user tasks), POST /api/tasks (creates new tasks), PUT /api/tasks/{task_id} (updates task completion status). Task completion status correctly drives progress bars in UI. Tested with real task data: 'Подготовиться к экзамену по математике', 'Сдать лабораторную работу по физике', 'Купить учебники в библиотеке'. Completion verification: 2 completed tasks, 1 incomplete task, all data persisted correctly in MongoDB."
+
 frontend:
   - task: "Header Component Display"
     implemented: true
