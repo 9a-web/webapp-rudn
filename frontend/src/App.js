@@ -63,8 +63,8 @@ const Home = () => {
     return savedTab || 'home';
   });
   
-  // Состояние для отслеживания модальных окон (скрывать нижнее меню)
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  // Состояние для отслеживания модального окна AddTaskModal из TasksSection
+  const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
   // Состояния для модальных окон в Header (для отслеживания)
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   // Состояние для модального окна ShareScheduleModal
@@ -76,25 +76,14 @@ const Home = () => {
   }, [activeTab]);
 
   // Отслеживание всех модальных окон (кроме ProfileModal) для скрытия нижнего меню
-  useEffect(() => {
-    const anyModalOpen = 
-      isCalendarOpen || 
-      isAnalyticsOpen || 
-      isAchievementsOpen || 
-      isNotificationSettingsOpen ||
-      isMenuOpen ||
-      isShareModalOpen ||
-      isModalOpen; // from TasksSection's AddTaskModal
-    
-    setIsModalOpen(anyModalOpen);
-  }, [
-    isCalendarOpen, 
-    isAnalyticsOpen, 
-    isAchievementsOpen, 
-    isNotificationSettingsOpen,
-    isMenuOpen,
-    isShareModalOpen
-  ]);
+  const isAnyModalOpen = 
+    isCalendarOpen || 
+    isAnalyticsOpen || 
+    isAchievementsOpen || 
+    isNotificationSettingsOpen ||
+    isMenuOpen ||
+    isShareModalOpen ||
+    isAddTaskModalOpen; // from TasksSection's AddTaskModal
 
   // Загрузка данных пользователя при монтировании
   useEffect(() => {
