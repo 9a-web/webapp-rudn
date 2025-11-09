@@ -755,6 +755,31 @@ async def delete_task(task_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@api_router.put("/tasks/reorder", response_model=SuccessResponse)
+async def reorder_tasks(task_orders: List[dict]):
+    """
+    Обновить порядок задач (batch update)
+    Принимает массив объектов: [{"id": "task_id", "order": 0}, ...]
+    """
+    try:
+        # Обновляем order для каждой задачи
+        for task_order in task_orders:
+            task_id = task_order.get("id")
+            order = task_order.get("order")
+            
+            if task_id is not None and order is not None:
+                await db.tasks.update_one(
+                    {"id": task_id},
+                    {"$set": {"order": order, "updated_at": datetime.utcnow()}}
+                )
+        
+        return SuccessResponse(success=True, message=f"Обновлен порядок {len(task_orders)} задач")
+    except Exception as e:
+        logger.error(f"Ошибка при изменении порядка задач: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+
 # Include the router in the main app
 app.include_router(api_router)
 
