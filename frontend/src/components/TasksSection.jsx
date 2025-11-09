@@ -177,6 +177,7 @@ export const TasksSection = ({ userSettings, selectedDate, weekNumber, onModalSt
         category: requestData.category,
         priority: requestData.priority,
         deadline: requestData.deadline,
+        target_date: requestData.target_date,  // Передаем target_date
         subject: requestData.subject,
       });
       setTasks([newTask, ...tasks]);
