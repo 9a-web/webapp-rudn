@@ -341,6 +341,7 @@ class TaskUpdate(BaseModel):
     category: Optional[str] = None
     priority: Optional[str] = None
     deadline: Optional[datetime] = None
+    target_date: Optional[datetime] = None
     subject: Optional[str] = None
     discipline_id: Optional[str] = None
     order: Optional[int] = None
