@@ -741,6 +741,7 @@ export const TasksSection = ({ userSettings, selectedDate, weekNumber, onModalSt
                 onReorder={handleReorderTasks}
                 className="min-h-[100px] list-none"
                 style={{ padding: 0, margin: 0 }}
+                layoutScroll
               >
                 {todayTasks.map((task) => (
                   <TodayTaskItem
