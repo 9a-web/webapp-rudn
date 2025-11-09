@@ -24,7 +24,7 @@ const RoomDetailModal = ({ isOpen, onClose, room, userSettings, onRoomDeleted })
   const [inviteLink, setInviteLink] = useState(null);
   const [showAddTask, setShowAddTask] = useState(false);
   const [newTaskTitle, setNewTaskTitle] = useState('');
-  const { webApp } = useContext(TelegramContext);
+  const { webApp } = useTelegram();
 
   const isOwner = room && userSettings && room.owner_id === userSettings.telegram_id;
 
