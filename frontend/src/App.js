@@ -618,7 +618,7 @@ const Home = () => {
           activeTab={activeTab}
           onTabChange={handleTabChange}
           hapticFeedback={hapticFeedback}
-          isHidden={isModalOpen}
+          isHidden={isAnyModalOpen}
         />
       )}
     </div>
