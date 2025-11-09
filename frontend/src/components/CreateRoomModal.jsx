@@ -2,10 +2,10 @@
  * Модальное окно создания комнаты
  */
 
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Users, Save } from 'lucide-react';
-import { TelegramContext } from '../context/TelegramContext';
+import { useTelegram } from '../contexts/TelegramContext';
 
 const CreateRoomModal = ({ isOpen, onClose, onCreateRoom }) => {
   const [name, setName] = useState('');
