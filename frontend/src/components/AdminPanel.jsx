@@ -11,7 +11,17 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
+// Правильное определение backend URL для админ панели
+const getBackendURL = () => {
+  // Для локальной разработки
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    return 'http://localhost:8001';
+  }
+  // Для production - используем текущий origin (domain)
+  return window.location.origin;
+};
+
+const BACKEND_URL = getBackendURL();
 
 const AdminPanel = ({ isOpen, onClose }) => {
   const [selectedPeriod, setSelectedPeriod] = useState(30); // 7, 30, или null (все время)
