@@ -2181,7 +2181,16 @@ class RUDNScheduleAPITester:
             # Bot info endpoint test
             self.test_bot_info_endpoint,
             # Tasks API comprehensive test (as requested)
-            self.test_tasks_api_comprehensive
+            self.test_comprehensive_task_completion_functionality,
+            # New Admin Panel Tests
+            self.test_admin_stats_endpoint,
+            self.test_admin_users_activity_endpoint,
+            self.test_admin_hourly_activity_endpoint,
+            self.test_admin_weekly_activity_endpoint,
+            self.test_admin_feature_usage_endpoint,
+            self.test_admin_top_users_endpoint,
+            self.test_admin_faculty_stats_endpoint,
+            self.test_admin_course_stats_endpoint
         ]
         
         passed = 0
