@@ -253,10 +253,12 @@ def main() -> None:
     # Создаем приложение
     application = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
     
-    # Регистрируем обработчик команды /start
+    # Регистрируем обработчики команд
     application.add_handler(CommandHandler("start", start_command))
+    application.add_handler(CommandHandler("users", users_command))
     
     logger.info("✅ Бот успешно запущен и готов к работе!")
+    logger.info("📝 Доступные команды: /start, /users (только для админов)")
     
     # Запускаем бота
     application.run_polling(allowed_updates=Update.ALL_TYPES)
