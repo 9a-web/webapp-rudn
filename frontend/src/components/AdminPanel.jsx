@@ -63,6 +63,7 @@ const AdminPanel = ({ isOpen, onClose }) => {
       setTopUsers(topUsersRes.data);
       setFacultyStats(facultyRes.data);
       setCourseStats(courseRes.data);
+      setLastUpdate(new Date());
     } catch (error) {
       console.error('Ошибка загрузки данных админ панели:', error);
     } finally {
