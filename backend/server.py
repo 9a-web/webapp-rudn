@@ -11,6 +11,8 @@ from typing import List, Optional
 import uuid
 from datetime import datetime, timedelta
 import httpx
+import asyncio
+import threading
 
 # Импорт модулей парсера и моделей
 from rudn_parser import (
