@@ -694,7 +694,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Bottom Navigation - Section Switching (Tasks & Journal)"
+    - "Admin Panel - User Activity Analytics & Statistics"
   stuck_tasks:
     - "Language Switching - i18n Integration"
   test_all: false
