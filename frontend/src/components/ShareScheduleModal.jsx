@@ -373,16 +373,25 @@ export const ShareScheduleModal = ({
                     whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={handleShareAsImage}
-                    className="w-full flex items-center gap-2 sm:gap-3 md:gap-4 p-3 sm:p-4 rounded-lg sm:rounded-xl bg-gradient-to-r from-green-500 to-teal-500 text-white hover:shadow-lg active:shadow-md transition-shadow"
+                    disabled={isGeneratingImage}
+                    className={`w-full flex items-center gap-2 sm:gap-3 md:gap-4 p-3 sm:p-4 rounded-lg sm:rounded-xl bg-gradient-to-r from-green-500 to-teal-500 text-white hover:shadow-lg active:shadow-md transition-shadow ${isGeneratingImage ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     <div className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0 flex items-center justify-center rounded-full bg-white/20">
-                      <ImageIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+                      {isGeneratingImage ? (
+                        <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <Download className="w-4 h-4 sm:w-5 sm:h-5" />
+                      )}
                     </div>
                     <div className="flex-1 text-left min-w-0">
-                      <p className="font-semibold text-sm sm:text-base truncate">Сохранить как картинку</p>
-                      <p className="text-xs text-white/80 hidden sm:block">Скриншот расписания</p>
+                      <p className="font-semibold text-sm sm:text-base truncate">
+                        {isGeneratingImage ? 'Создаём картинку...' : 'Сохранить как картинку'}
+                      </p>
+                      <p className="text-xs text-white/80 hidden sm:block">
+                        {isGeneratingImage ? 'Пожалуйста, подождите' : 'Скачать изображение расписания'}
+                      </p>
                     </div>
-                    <span className="text-xs bg-white/20 px-2 py-0.5 sm:py-1 rounded-full flex-shrink-0">Скоро</span>
+                    {!isGeneratingImage && <ImageIcon className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />}
                   </motion.button>
 
                   {/* Пригласить друзей */}
