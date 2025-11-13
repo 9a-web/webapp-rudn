@@ -1776,6 +1776,406 @@ async def get_room_tasks(room_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# ============ АДМИН ПАНЕЛЬ - ENDPOINTS ============
+
+@api_router.get("/admin/stats")
+async def get_admin_stats(
+    days: Optional[int] = None  # Фильтр: количество дней назад (7, 30, или все время если None)
+):
+    """
+    Получить общую статистику для админ панели
+    Доступно только для admin user ID: 765963392
+    """
+    try:
+        from datetime import timezone
+        
+        # Определяем временной фильтр
+        time_filter = {}
+        if days:
+            cutoff_date = datetime.now(timezone.utc) - timedelta(days=days)
+            time_filter = {"created_at": {"$gte": cutoff_date}}
+        
+        # Общее количество пользователей
+        total_users = await db.user_settings.count_documents({})
+        
+        # Активные пользователи (по last_activity)
+        now = datetime.now(timezone.utc)
+        today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        week_start = now - timedelta(days=7)
+        month_start = now - timedelta(days=30)
+        
+        active_users_today = await db.user_settings.count_documents({
+            "last_activity": {"$gte": today_start}
+        })
+        
+        active_users_week = await db.user_settings.count_documents({
+            "last_activity": {"$gte": week_start}
+        })
+        
+        active_users_month = await db.user_settings.count_documents({
+            "last_activity": {"$gte": month_start}
+        })
+        
+        # Новые пользователи
+        new_users_today = await db.user_settings.count_documents({
+            "created_at": {"$gte": today_start}
+        })
+        
+        new_users_week = await db.user_settings.count_documents({
+            "created_at": {"$gte": week_start}
+        })
+        
+        new_users_month = await db.user_settings.count_documents({
+            "created_at": {"$gte": month_start}
+        })
+        
+        # Применяем фильтр по дням для остальных метрик
+        tasks_filter = time_filter.copy()
+        total_tasks = await db.tasks.count_documents(tasks_filter)
+        total_completed_tasks = await db.tasks.count_documents({**tasks_filter, "completed": True})
+        
+        # Достижения
+        achievements_filter = time_filter.copy() if time_filter else {}
+        if achievements_filter:
+            achievements_filter["earned_at"] = achievements_filter.pop("created_at")
+        total_achievements_earned = await db.user_achievements.count_documents(achievements_filter)
+        
+        # Комнаты
+        total_rooms = await db.rooms.count_documents(time_filter)
+        
+        # Просмотры расписания (суммируем из user_stats)
+        pipeline = []
+        if time_filter:
+            pipeline.append({"$match": time_filter})
+        pipeline.append({
+            "$group": {
+                "_id": None,
+                "total": {"$sum": "$schedule_views"}
+            }
+        })
+        
+        result = await db.user_stats.aggregate(pipeline).to_list(1)
+        total_schedule_views = result[0]["total"] if result else 0
+        
+        return {
+            "total_users": total_users,
+            "active_users_today": active_users_today,
+            "active_users_week": active_users_week,
+            "active_users_month": active_users_month,
+            "new_users_today": new_users_today,
+            "new_users_week": new_users_week,
+            "new_users_month": new_users_month,
+            "total_tasks": total_tasks,
+            "total_completed_tasks": total_completed_tasks,
+            "total_achievements_earned": total_achievements_earned,
+            "total_rooms": total_rooms,
+            "total_schedule_views": total_schedule_views
+        }
+    except Exception as e:
+        logger.error(f"Ошибка при получении админ статистики: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/admin/users-activity")
+async def get_users_activity(days: Optional[int] = 30):
+    """
+    Получить график регистраций пользователей по дням
+    """
+    try:
+        from datetime import timezone
+        
+        # Определяем период
+        if days:
+            cutoff_date = datetime.now(timezone.utc) - timedelta(days=days)
+            match_filter = {"created_at": {"$gte": cutoff_date}}
+        else:
+            match_filter = {}
+        
+        # Агрегация по дням
+        pipeline = [
+            {"$match": match_filter},
+            {
+                "$group": {
+                    "_id": {
+                        "$dateToString": {
+                            "format": "%Y-%m-%d",
+                            "date": "$created_at"
+                        }
+                    },
+                    "count": {"$sum": 1}
+                }
+            },
+            {"$sort": {"_id": 1}}
+        ]
+        
+        result = await db.user_settings.aggregate(pipeline).to_list(None)
+        
+        return [{"date": item["_id"], "count": item["count"]} for item in result]
+    except Exception as e:
+        logger.error(f"Ошибка при получении активности пользователей: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/admin/hourly-activity")
+async def get_hourly_activity(days: Optional[int] = 7):
+    """
+    Получить активность по часам (на основе last_activity)
+    """
+    try:
+        from datetime import timezone
+        
+        # Определяем период
+        if days:
+            cutoff_date = datetime.now(timezone.utc) - timedelta(days=days)
+            match_filter = {"last_activity": {"$gte": cutoff_date, "$exists": True}}
+        else:
+            match_filter = {"last_activity": {"$exists": True}}
+        
+        # Агрегация по часам
+        pipeline = [
+            {"$match": match_filter},
+            {
+                "$group": {
+                    "_id": {"$hour": "$last_activity"},
+                    "count": {"$sum": 1}
+                }
+            },
+            {"$sort": {"_id": 1}}
+        ]
+        
+        result = await db.user_settings.aggregate(pipeline).to_list(None)
+        
+        # Заполняем все часы (0-23)
+        hourly_data = {i: 0 for i in range(24)}
+        for item in result:
+            hourly_data[item["_id"]] = item["count"]
+        
+        return [{"hour": hour, "count": count} for hour, count in hourly_data.items()]
+    except Exception as e:
+        logger.error(f"Ошибка при получении почасовой активности: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/admin/weekly-activity")
+async def get_weekly_activity(days: Optional[int] = 30):
+    """
+    Получить активность по дням недели
+    """
+    try:
+        from datetime import timezone
+        
+        # Определяем период
+        if days:
+            cutoff_date = datetime.now(timezone.utc) - timedelta(days=days)
+            match_filter = {"last_activity": {"$gte": cutoff_date, "$exists": True}}
+        else:
+            match_filter = {"last_activity": {"$exists": True}}
+        
+        # Агрегация по дням недели (1=Sunday, 2=Monday, ..., 7=Saturday)
+        pipeline = [
+            {"$match": match_filter},
+            {
+                "$group": {
+                    "_id": {"$dayOfWeek": "$last_activity"},
+                    "count": {"$sum": 1}
+                }
+            },
+            {"$sort": {"_id": 1}}
+        ]
+        
+        result = await db.user_settings.aggregate(pipeline).to_list(None)
+        
+        # Преобразуем в удобный формат (0=Пн, 6=Вс)
+        day_names = ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"]
+        weekly_data = {i: 0 for i in range(7)}
+        
+        for item in result:
+            day_index = (item["_id"] - 1) % 7  # MongoDB: 1=Sunday, конвертируем в 0=Sunday
+            weekly_data[day_index] = item["count"]
+        
+        return [{"day": day_names[i], "count": weekly_data[i]} for i in range(7)]
+    except Exception as e:
+        logger.error(f"Ошибка при получении недельной активности: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/admin/feature-usage")
+async def get_feature_usage(days: Optional[int] = None):
+    """
+    Получить статистику использования функций
+    """
+    try:
+        from datetime import timezone
+        
+        # Определяем фильтр
+        time_filter = {}
+        if days:
+            cutoff_date = datetime.now(timezone.utc) - timedelta(days=days)
+            time_filter = {"created_at": {"$gte": cutoff_date}}
+        
+        # Агрегация статистики
+        pipeline = []
+        if time_filter:
+            pipeline.append({"$match": time_filter})
+        
+        pipeline.append({
+            "$group": {
+                "_id": None,
+                "schedule_views": {"$sum": "$schedule_views"},
+                "analytics_views": {"$sum": "$analytics_views"},
+                "calendar_opens": {"$sum": "$calendar_opens"},
+                "notifications_configured": {"$sum": {"$cond": ["$notifications_configured", 1, 0]}},
+                "schedule_shares": {"$sum": "$schedule_shares"},
+                "achievements_earned": {"$sum": "$achievements_count"}
+            }
+        })
+        
+        result = await db.user_stats.aggregate(pipeline).to_list(1)
+        
+        if result:
+            stats = result[0]
+            # Подсчитываем созданные задачи
+            tasks_filter = time_filter.copy()
+            tasks_created = await db.tasks.count_documents(tasks_filter)
+            
+            return {
+                "schedule_views": stats.get("schedule_views", 0),
+                "analytics_views": stats.get("analytics_views", 0),
+                "calendar_opens": stats.get("calendar_opens", 0),
+                "notifications_configured": stats.get("notifications_configured", 0),
+                "schedule_shares": stats.get("schedule_shares", 0),
+                "tasks_created": tasks_created,
+                "achievements_earned": stats.get("achievements_earned", 0)
+            }
+        else:
+            return {
+                "schedule_views": 0,
+                "analytics_views": 0,
+                "calendar_opens": 0,
+                "notifications_configured": 0,
+                "schedule_shares": 0,
+                "tasks_created": 0,
+                "achievements_earned": 0
+            }
+    except Exception as e:
+        logger.error(f"Ошибка при получении статистики использования функций: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/admin/top-users")
+async def get_top_users(
+    metric: str = "points",  # points, achievements, activity
+    limit: int = 10
+):
+    """
+    Получить топ пользователей по метрике
+    """
+    try:
+        # Определяем поле для сортировки
+        sort_field = {
+            "points": "total_points",
+            "achievements": "achievements_count",
+            "activity": "schedule_views"
+        }.get(metric, "total_points")
+        
+        # Получаем топ из user_stats
+        pipeline = [
+            {"$sort": {sort_field: -1}},
+            {"$limit": limit},
+            {
+                "$lookup": {
+                    "from": "user_settings",
+                    "localField": "telegram_id",
+                    "foreignField": "telegram_id",
+                    "as": "user_info"
+                }
+            },
+            {"$unwind": {"path": "$user_info", "preserveNullAndEmptyArrays": True}}
+        ]
+        
+        result = await db.user_stats.aggregate(pipeline).to_list(limit)
+        
+        top_users = []
+        for item in result:
+            user_info = item.get("user_info", {})
+            top_users.append({
+                "telegram_id": item["telegram_id"],
+                "username": user_info.get("username"),
+                "first_name": user_info.get("first_name"),
+                "value": item.get(sort_field, 0),
+                "group_name": user_info.get("group_name")
+            })
+        
+        return top_users
+    except Exception as e:
+        logger.error(f"Ошибка при получении топ пользователей: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/admin/faculty-stats")
+async def get_faculty_stats():
+    """
+    Получить статистику по факультетам
+    """
+    try:
+        pipeline = [
+            {
+                "$group": {
+                    "_id": {
+                        "faculty_id": "$facultet_id",
+                        "faculty_name": "$facultet_name"
+                    },
+                    "count": {"$sum": 1}
+                }
+            },
+            {"$sort": {"count": -1}}
+        ]
+        
+        result = await db.user_settings.aggregate(pipeline).to_list(None)
+        
+        return [
+            {
+                "faculty_name": item["_id"]["faculty_name"] or "Неизвестно",
+                "faculty_id": item["_id"]["faculty_id"],
+                "users_count": item["count"]
+            }
+            for item in result
+        ]
+    except Exception as e:
+        logger.error(f"Ошибка при получении статистики по факультетам: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/admin/course-stats")
+async def get_course_stats():
+    """
+    Получить статистику по курсам
+    """
+    try:
+        pipeline = [
+            {
+                "$group": {
+                    "_id": "$kurs",
+                    "count": {"$sum": 1}
+                }
+            },
+            {"$sort": {"_id": 1}}
+        ]
+        
+        result = await db.user_settings.aggregate(pipeline).to_list(None)
+        
+        return [
+            {
+                "course": item["_id"],
+                "users_count": item["count"]
+            }
+            for item in result
+        ]
+    except Exception as e:
+        logger.error(f"Ошибка при получении статистики по курсам: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # Include the router in the main app
 app.include_router(api_router)
 
