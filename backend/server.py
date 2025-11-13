@@ -290,6 +290,11 @@ async def get_user_settings(telegram_id: int):
             {"$set": {"last_activity": datetime.utcnow()}}
         )
         
+        # Конвертируем _id в строку для поля id
+        if "_id" in user_data:
+            user_data["id"] = str(user_data["_id"])
+            del user_data["_id"]
+        
         return UserSettingsResponse(**user_data)
     except HTTPException:
         raise
