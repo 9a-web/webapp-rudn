@@ -471,6 +471,22 @@ export const LiveScheduleSection = ({
             })}
           </motion.div>
         )}
+        
+        {/* Admin Panel Link - показывается только для admin ID: 765963392 */}
+        {user && user.id === 765963392 && mockSchedule.length > 0 && (
+          <div className="mt-8 mb-6 text-center">
+            <p 
+              onClick={() => {
+                hapticFeedback?.('medium');
+                onAdminPanelOpen?.();
+              }}
+              className="text-sm text-gray-400 cursor-pointer hover:text-purple-500 transition-colors active:text-purple-600"
+              style={{ userSelect: 'none' }}
+            >
+              📊 Админ панель
+            </p>
+          </div>
+        )}
         </div>
       </div>
 
