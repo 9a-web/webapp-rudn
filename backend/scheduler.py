@@ -283,36 +283,29 @@ class NotificationScheduler:
     
     def _get_week_number(self, date: datetime) -> int:
         """
-        Определить номер недели (1 или 2) для даты
+        Определить номер недели (1 или 2) на основе календарной недели года
+        
+        В университетском расписании используется система "четная/нечетная неделя":
+        - Неделя №1 (нечетная): 1-я, 3-я, 5-я... недели года
+        - Неделя №2 (четная): 2-я, 4-я, 6-я... недели года
         
         Args:
             date: Дата для проверки
             
         Returns:
-            1 для текущей недели, 2 для следующей
+            1 для нечетных недель года, 2 для четных недель года
         """
-        # Получаем понедельник текущей недели
-        day_of_week = date.weekday()  # 0 = понедельник
-        monday = date - timedelta(days=day_of_week)
-        monday = monday.replace(hour=0, minute=0, second=0, microsecond=0)
+        # Получаем номер недели в году по ISO 8601 стандарту
+        # Возвращает (год, неделя, день_недели)
+        iso_year, iso_week, iso_weekday = date.isocalendar()
         
-        # Получаем воскресенье текущей недели
-        sunday = monday + timedelta(days=6)
-        sunday = sunday.replace(hour=23, minute=59, second=59)
-        
-        # Проверяем, входит ли дата в текущую неделю
-        if monday <= date <= sunday:
-            return 1
-        
-        # Проверяем следующую неделю
-        next_monday = monday + timedelta(days=7)
-        next_sunday = sunday + timedelta(days=7)
-        
-        if next_monday <= date <= next_sunday:
-            return 2
-        
-        # По умолчанию текущая неделя
-        return 1
+        # Определяем четность недели
+        # Нечетная неделя (1, 3, 5, 7, ...) → week_number = 1
+        # Четная неделя (2, 4, 6, 8, ...) → week_number = 2
+        if iso_week % 2 == 1:
+            return 1  # Нечетная неделя
+        else:
+            return 2  # Четная неделя
     
     async def cleanup_old_notifications(self):
         """
