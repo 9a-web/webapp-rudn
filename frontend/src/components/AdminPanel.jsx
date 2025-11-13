@@ -219,13 +219,13 @@ const AdminPanel = ({ isOpen, onClose }) => {
           <div className="overflow-y-auto h-[calc(92vh-120px)] sm:max-h-[calc(90vh-120px)] px-4 py-4 sm:p-6 space-y-4 sm:space-y-6 overscroll-contain">
             {loading ? (
               <div className="flex items-center justify-center py-20">
-                <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent"></div>
+                <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-4 border-purple-500 border-t-transparent"></div>
               </div>
             ) : (
               <>
                 {/* General Stats Cards */}
                 {generalStats && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                     <StatCard
                       icon={<Users className="w-6 h-6" />}
                       title="Всего пользователей"
