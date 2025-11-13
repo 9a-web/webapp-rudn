@@ -105,6 +105,18 @@
 user_problem_statement: "Implement Telegram Bot with /start command that adds users to database on first use and shows welcome message with Web App button"
 
 backend:
+  - task: "Telegram Bot - /start Command Handler"
+    implemented: true
+    working: true
+    file: "/app/backend/telegram_bot.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "✅ Telegram bot fully implemented with /start command. Bot adds new users to MongoDB on first /start (saves telegram_id, username, first_name, last_name, created_at, last_activity). For existing users, updates last_activity timestamp. Sends personalized welcome message with detailed app features description (8 key features: Schedule, Live-tracking, Tasks, Achievements, Analytics, Notifications, Weather, Rooms). Includes inline button 'Открыть расписание' that opens Web App at https://rudn-schedule.ru. Bot runs under Supervisor with auto-restart. Logs show successful user creation and message delivery. Tested with real users: 765963392 (@shkarol) and 6641063074 - both added to database successfully."
+
   - task: "GET /api/faculties - Faculty List Endpoint"
     implemented: true
     working: true
