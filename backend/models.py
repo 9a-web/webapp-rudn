@@ -591,3 +591,66 @@ class RoomTaskCreate(BaseModel):
     priority: str = 'medium'
     telegram_id: int  # создатель задачи
 
+
+# ============ Модели для админ панели ============
+
+class AdminStatsResponse(BaseModel):
+    """Общая статистика для админ панели"""
+    total_users: int
+    active_users_today: int
+    active_users_week: int
+    active_users_month: int
+    new_users_today: int
+    new_users_week: int
+    new_users_month: int
+    total_tasks: int
+    total_completed_tasks: int
+    total_achievements_earned: int
+    total_rooms: int
+    total_schedule_views: int
+
+
+class UserActivityPoint(BaseModel):
+    """Точка данных для графика активности"""
+    date: str  # YYYY-MM-DD
+    count: int
+
+
+class HourlyActivityPoint(BaseModel):
+    """Точка данных для графика активности по часам"""
+    hour: int  # 0-23
+    count: int
+
+
+class FeatureUsageStats(BaseModel):
+    """Статистика использования функций"""
+    schedule_views: int
+    analytics_views: int
+    calendar_opens: int
+    notifications_configured: int
+    schedule_shares: int
+    tasks_created: int
+    achievements_earned: int
+
+
+class TopUser(BaseModel):
+    """Топ пользователь"""
+    telegram_id: int
+    username: Optional[str] = None
+    first_name: Optional[str] = None
+    value: int  # значение метрики (очки, достижения, активность)
+    group_name: Optional[str] = None
+
+
+class FacultyStats(BaseModel):
+    """Статистика по факультету"""
+    faculty_name: str
+    faculty_id: str
+    users_count: int
+
+
+class CourseStats(BaseModel):
+    """Статистика по курсам"""
+    course: str
+    users_count: int
+
