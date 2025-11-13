@@ -28,6 +28,7 @@ const AnalyticsModal = lazy(() => import('./components/AnalyticsModal').then(mod
 const AchievementsModal = lazy(() => import('./components/AchievementsModal').then(module => ({ default: module.AchievementsModal })));
 const AchievementNotification = lazy(() => import('./components/AchievementNotification').then(module => ({ default: module.AchievementNotification })));
 const NotificationSettings = lazy(() => import('./components/NotificationSettings'));
+const AdminPanel = lazy(() => import('./components/AdminPanel'));
 
 const Home = () => {
   const { user, isReady, showAlert, hapticFeedback } = useTelegram();
