@@ -231,46 +231,42 @@ const AdminPanel = ({ isOpen, onClose }) => {
                 {/* Hourly and Weekly Activity */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   {/* Hourly Activity */}
-                  {hourlyActivity.length > 0 && (
-                    <ChartCard title="Активность по часам" icon={<Clock />}>
-                      <ResponsiveContainer width="100%" height={250}>
-                        <BarChart data={hourlyActivity}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#ffffff20" />
-                          <XAxis dataKey="hour" stroke="#888" />
-                          <YAxis stroke="#888" />
-                          <Tooltip
-                            contentStyle={{
-                              backgroundColor: '#2B2B3A',
-                              border: '1px solid rgba(255,255,255,0.1)',
-                              borderRadius: '12px'
-                            }}
-                          />
-                          <Bar dataKey="count" fill="#EC4899" radius={[8, 8, 0, 0]} />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </ChartCard>
-                  )}
+                  <ChartCard title="Активность по часам" icon={<Clock />}>
+                    <ResponsiveContainer width="100%" height={250}>
+                      <BarChart data={hourlyActivity}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#ffffff20" />
+                        <XAxis dataKey="hour" stroke="#888" />
+                        <YAxis stroke="#888" />
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: '#2B2B3A',
+                            border: '1px solid rgba(255,255,255,0.1)',
+                            borderRadius: '12px'
+                          }}
+                        />
+                        <Bar dataKey="count" fill="#EC4899" radius={[8, 8, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </ChartCard>
 
                   {/* Weekly Activity */}
-                  {weeklyActivity.length > 0 && (
-                    <ChartCard title="Активность по дням недели" icon={<Calendar />}>
-                      <ResponsiveContainer width="100%" height={250}>
-                        <BarChart data={weeklyActivity}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#ffffff20" />
-                          <XAxis dataKey="day" stroke="#888" />
-                          <YAxis stroke="#888" />
-                          <Tooltip
-                            contentStyle={{
-                              backgroundColor: '#2B2B3A',
-                              border: '1px solid rgba(255,255,255,0.1)',
-                              borderRadius: '12px'
-                            }}
-                          />
-                          <Bar dataKey="count" fill="#10B981" radius={[8, 8, 0, 0]} />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </ChartCard>
-                  )}
+                  <ChartCard title="Активность по дням недели" icon={<Calendar />}>
+                    <ResponsiveContainer width="100%" height={250}>
+                      <BarChart data={weeklyActivity}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#ffffff20" />
+                        <XAxis dataKey="day" stroke="#888" />
+                        <YAxis stroke="#888" />
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: '#2B2B3A',
+                            border: '1px solid rgba(255,255,255,0.1)',
+                            borderRadius: '12px'
+                          }}
+                        />
+                        <Bar dataKey="count" fill="#10B981" radius={[8, 8, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </ChartCard>
                 </div>
 
                 {/* Feature Usage */}
