@@ -282,17 +282,17 @@ const AdminPanel = ({ isOpen, onClose }) => {
                       </LineChart>
                     </ResponsiveContainer>
                   ) : (
-                    <div className="h-[300px] flex items-center justify-center text-gray-500">
-                      Нет данных о регистрациях за выбранный период
+                    <div className="h-[250px] flex items-center justify-center text-gray-500 text-sm">
+                      Нет данных о регистрациях
                     </div>
                   )}
                 </ChartCard>
 
                 {/* Hourly and Weekly Activity */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                   {/* Hourly Activity */}
                   <ChartCard title="Активность по часам" icon={<Clock />}>
-                    <ResponsiveContainer width="100%" height={250}>
+                    <ResponsiveContainer width="100%" height={200}>
                       <BarChart data={hourlyActivity}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#ffffff20" />
                         <XAxis dataKey="hour" stroke="#888" />
