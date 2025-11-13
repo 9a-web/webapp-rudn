@@ -103,10 +103,10 @@
 DB_CLEAR_PASSWORD="RUDN_CLEAR_2025"
 ```
 
-Admin ID задан в коде:
+Admin ID заданы в коде:
 
 ```python
-ADMIN_IDS = [765963392]
+ADMIN_IDS = [765963392, 1311283832]
 ```
 
 ### Реализация
