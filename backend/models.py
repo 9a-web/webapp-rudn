@@ -455,6 +455,10 @@ class GroupTaskResponse(BaseModel):
     completion_percentage: int = 0  # процент выполнения
     total_participants: int = 0
     completed_participants: int = 0
+    tags: List[str] = []  # Теги/метки
+    subtasks: List[Subtask] = []  # Подзадачи
+    order: int = 0  # Порядок для drag & drop
+    comments_count: int = 0  # Количество комментариев
 
 
 class GroupTaskComment(BaseModel):
