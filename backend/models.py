@@ -389,6 +389,16 @@ class GroupTaskParticipant(BaseModel):
     role: str = 'member'  # 'owner' или 'member'
 
 
+class Subtask(BaseModel):
+    """Подзадача"""
+    subtask_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    title: str
+    completed: bool = False
+    completed_by: Optional[int] = None
+    completed_at: Optional[datetime] = None
+    order: int = 0
+
+
 class GroupTask(BaseModel):
     """Модель групповой задачи"""
     task_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -410,6 +420,9 @@ class GroupTask(BaseModel):
         'notify_on_complete': True,
         'notify_on_comment': True
     }
+    tags: List[str] = []  # Теги/метки для задачи
+    subtasks: List[Subtask] = []  # Подзадачи
+    order: int = 0  # Порядок для drag & drop
 
 
 class GroupTaskCreate(BaseModel):
