@@ -676,11 +676,15 @@ const TasksTab = ({
                      text-sm touch-manipulation"
           />
           <button
-            onClick={handleAddTask}
+            onClick={() => {
+              console.log('Plus button clicked');
+              handleAddTask();
+            }}
             disabled={!newTaskTitle.trim()}
+            type="button"
             className={`px-4 py-3 rounded-xl bg-gradient-to-r ${colorScheme.buttonGradient}
-                     text-white font-medium disabled:opacity-30
-                     transition-all active:scale-95 touch-manipulation`}
+                     text-white font-medium disabled:opacity-30 disabled:cursor-not-allowed
+                     transition-all active:scale-95 touch-manipulation cursor-pointer`}
           >
             <Plus className="w-5 h-5" />
           </button>
