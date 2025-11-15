@@ -1799,6 +1799,135 @@ async def delete_room(room_id: str, telegram_id: int = Body(..., embed=True)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+
+@api_router.put("/rooms/{room_id}", response_model=RoomResponse)
+async def update_room(room_id: str, update_data: RoomUpdate, telegram_id: int = Body(..., embed=True)):
+    """Обновить комнату (название, описание, цвет) - только владелец или админ"""
+    try:
+        room_doc = await db.rooms.find_one({"room_id": room_id})
+        
+        if not room_doc:
+            raise HTTPException(status_code=404, detail="Комната не найдена")
+        
+        # Проверяем права доступа (владелец или админ)
+        participant = next((p for p in room_doc.get("participants", []) if p["telegram_id"] == telegram_id), None)
+        if not participant or (participant["role"] not in ["owner", "admin"]):
+            raise HTTPException(status_code=403, detail="Недостаточно прав для редактирования комнаты")
+        
+        # Формируем обновления
+        updates = {"updated_at": datetime.utcnow()}
+        if update_data.name is not None:
+            updates["name"] = update_data.name
+        if update_data.description is not None:
+            updates["description"] = update_data.description
+        if update_data.color is not None:
+            updates["color"] = update_data.color
+        
+        # Обновляем комнату
+        await db.rooms.update_one({"room_id": room_id}, {"$set": updates})
+        
+        # Получаем обновленную комнату
+        updated_room = await db.rooms.find_one({"room_id": room_id})
+        
+        # Получаем статистику
+        tasks_cursor = db.group_tasks.find({"room_id": room_id})
+        all_tasks = await tasks_cursor.to_list(length=None)
+        total_tasks = len(all_tasks)
+        completed_tasks = sum(1 for task in all_tasks if task.get("status") == "completed")
+        completion_percentage = int((completed_tasks / total_tasks * 100)) if total_tasks > 0 else 0
+        
+        # Логируем активность
+        activity = RoomActivity(
+            room_id=room_id,
+            user_id=telegram_id,
+            first_name=participant.get("first_name", ""),
+            username=participant.get("username"),
+            action_type="room_updated",
+            action_details={"changes": updates}
+        )
+        await db.room_activities.insert_one(activity.model_dump())
+        
+        return RoomResponse(
+            room_id=updated_room["room_id"],
+            name=updated_room["name"],
+            description=updated_room.get("description"),
+            owner_id=updated_room["owner_id"],
+            created_at=updated_room["created_at"],
+            updated_at=updated_room["updated_at"],
+            participants=[RoomParticipant(**p) for p in updated_room.get("participants", [])],
+            invite_token=updated_room["invite_token"],
+            color=updated_room.get("color", "blue"),
+            total_participants=len(updated_room.get("participants", [])),
+            total_tasks=total_tasks,
+            completed_tasks=completed_tasks,
+            completion_percentage=completion_percentage
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Ошибка при обновлении комнаты: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.put("/rooms/{room_id}/participant-role", response_model=SuccessResponse)
+async def update_participant_role(role_update: ParticipantRoleUpdate):
+    """Изменить роль участника комнаты - только владелец или админ"""
+    try:
+        room_doc = await db.rooms.find_one({"room_id": role_update.room_id})
+        
+        if not room_doc:
+            raise HTTPException(status_code=404, detail="Комната не найдена")
+        
+        # Проверяем права изменяющего (владелец или админ)
+        changer = next((p for p in room_doc.get("participants", []) if p["telegram_id"] == role_update.changed_by), None)
+        if not changer or (changer["role"] not in ["owner", "admin"]):
+            raise HTTPException(status_code=403, detail="Недостаточно прав для изменения ролей")
+        
+        # Проверяем, что изменяемый участник существует
+        target = next((p for p in room_doc.get("participants", []) if p["telegram_id"] == role_update.telegram_id), None)
+        if not target:
+            raise HTTPException(status_code=404, detail="Участник не найден в комнате")
+        
+        # Нельзя изменить роль владельца
+        if target["role"] == "owner":
+            raise HTTPException(status_code=403, detail="Нельзя изменить роль владельца")
+        
+        # Валидация новой роли
+        valid_roles = ["owner", "admin", "moderator", "member", "viewer"]
+        if role_update.new_role not in valid_roles:
+            raise HTTPException(status_code=400, detail=f"Недопустимая роль. Допустимые: {', '.join(valid_roles)}")
+        
+        # Обновляем роль участника
+        await db.rooms.update_one(
+            {"room_id": role_update.room_id, "participants.telegram_id": role_update.telegram_id},
+            {"$set": {"participants.$.role": role_update.new_role, "updated_at": datetime.utcnow()}}
+        )
+        
+        # Логируем активность
+        activity = RoomActivity(
+            room_id=role_update.room_id,
+            user_id=role_update.changed_by,
+            first_name=changer.get("first_name", ""),
+            username=changer.get("username"),
+            action_type="role_changed",
+            action_details={
+                "target_user": role_update.telegram_id,
+                "target_name": target.get("first_name", ""),
+                "old_role": target.get("role"),
+                "new_role": role_update.new_role
+            }
+        )
+        await db.room_activities.insert_one(activity.model_dump())
+        
+        return SuccessResponse(success=True, message=f"Роль участника изменена на {role_update.new_role}")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Ошибка при изменении роли участника: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+
 @api_router.get("/rooms/{room_id}/tasks", response_model=List[GroupTaskResponse])
 async def get_room_tasks(room_id: str):
     """Получить все задачи комнаты"""
