@@ -647,12 +647,16 @@ const TasksTab = ({
       {/* Кнопка добавления задачи */}
       {!showAddTask ? (
         <button
-          onClick={() => setShowAddTask(true)}
+          onClick={() => {
+            console.log('Add task button clicked');
+            setShowAddTask(true);
+          }}
+          type="button"
           className={`w-full px-4 py-3 rounded-xl border-2 border-dashed 
                    ${colorScheme.borderColor} hover:bg-gray-800
                    text-gray-400 hover:text-gray-300
-                   transition-all touch-manipulation active:scale-98
-                   flex items-center justify-center gap-2`}
+                   transition-all touch-manipulation active:scale-95
+                   flex items-center justify-center gap-2 cursor-pointer`}
         >
           <Plus className="w-5 h-5" />
           <span className="font-medium">Добавить задачу</span>
