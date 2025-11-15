@@ -174,7 +174,7 @@ export const TelegramProvider = ({ children }) => {
     } else {
       console.warn('⚠️ Telegram WebApp API недоступен. Разработка вне Telegram.');
       setUser({
-        id: 123456789,
+        id: 999888777,
         first_name: 'Test',
         last_name: 'User',
         username: 'testuser',
