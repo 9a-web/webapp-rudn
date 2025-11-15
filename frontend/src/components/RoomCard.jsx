@@ -92,14 +92,14 @@ const RoomCard = ({ room, onClick }) => {
       </div>
 
       {/* Участники */}
-      <div className="flex items-center justify-between mt-auto pt-2 border-t border-blue-200">
+      <div className={`flex items-center justify-between mt-auto pt-2 border-t ${colorScheme.borderColor}`}>
         <div className="flex items-center gap-1">
-          <Users className="w-3 h-3 text-blue-500" />
+          <Users className="w-3 h-3" style={{ color: colorScheme.accentColor }} />
           <span className="text-xs font-medium text-gray-700">
             {total_participants}
           </span>
         </div>
-        <ChevronRight className="w-4 h-4 text-blue-400" />
+        <ChevronRight className="w-4 h-4" style={{ color: `${colorScheme.accentColor}99` }} />
       </div>
     </motion.div>
   );
