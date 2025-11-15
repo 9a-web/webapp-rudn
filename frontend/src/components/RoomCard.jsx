@@ -5,6 +5,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Users, ChevronRight } from 'lucide-react';
+import { getRoomColor } from '../constants/roomColors';
 
 const RoomCard = ({ room, onClick }) => {
   const {
@@ -12,8 +13,11 @@ const RoomCard = ({ room, onClick }) => {
     total_participants = 0,
     total_tasks = 0,
     completed_tasks = 0,
-    completion_percentage = 0
+    completion_percentage = 0,
+    color = 'blue'
   } = room;
+  
+  const colorScheme = getRoomColor(color);
 
   return (
     <motion.div
