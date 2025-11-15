@@ -866,7 +866,8 @@ export const TasksSection = ({ userSettings, selectedDate, weekNumber, onModalSt
         </h2>
         
         {/* Горизонтальный скролл с комнатами */}
-        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-blue-400 scrollbar-track-blue-100">
+        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-blue-400 scrollbar-track-blue-100 
+                      -mx-4 px-4 sm:mx-0 sm:px-0 snap-x snap-mandatory touch-pan-x">
           {rooms.map((room) => (
             <RoomCard
               key={room.room_id}
@@ -889,7 +890,7 @@ export const TasksSection = ({ userSettings, selectedDate, weekNumber, onModalSt
             className="flex-shrink-0 w-[160px] h-[200px] bg-gradient-to-br from-gray-100 to-gray-50 
                        rounded-[24px] p-4 cursor-pointer shadow-lg shadow-gray-500/10 
                        border-2 border-dashed border-gray-300 hover:border-blue-400
-                       flex flex-col items-center justify-center gap-3 transition-colors"
+                       flex flex-col items-center justify-center gap-3 transition-colors snap-start"
           >
             <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 
                            rounded-full flex items-center justify-center shadow-lg">
