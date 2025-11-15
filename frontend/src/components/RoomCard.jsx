@@ -27,10 +27,10 @@ const RoomCard = ({ room, onClick }) => {
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
       onClick={onClick}
-      className={`relative flex-shrink-0 w-[160px] h-[200px] bg-gradient-to-br ${colorScheme.cardGradient} 
+      className={`relative flex-shrink-0 w-[160px] min-w-[160px] h-[200px] bg-gradient-to-br ${colorScheme.cardGradient} 
                  rounded-[24px] p-4 cursor-pointer shadow-lg ${colorScheme.shadowColor} 
                  border ${colorScheme.borderColor} overflow-hidden flex flex-col
-                 ${colorScheme.hoverShadow} transition-shadow`}
+                 ${colorScheme.hoverShadow} transition-shadow snap-start`}
     >
       {/* Заголовок с иконкой */}
       <div className="flex items-start gap-2 mb-3">
