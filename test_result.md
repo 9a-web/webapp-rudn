@@ -706,6 +706,18 @@ frontend:
           agent: "main"
           comment: "✅ ИСПРАВЛЕНА ОБРЕЗКА ГРАНИЦ КАРТОЧЕК КОМНАТ: По запросу пользователя 'При наведении на карточку комнаты границы обрезаются' исправлена проблема с обрезкой теней и границ при hover эффекте. ROOT CAUSE: Карточка имела whileHover={{scale: 1.02}} что увеличивало её на 2%, но класс overflow-hidden обрезал тени и границы, выходящие за пределы контейнера. Контейнер с overflow-x-auto также обрезал элементы. РЕШЕНИЕ: 1) RoomCard.jsx - удален класс overflow-hidden из карточки (строка 32), теперь тени и границы отображаются полностью при scale. 2) TasksSection.jsx - добавлен padding py-2 вместо pb-2 в контейнер комнат (строка 896), обеспечивает пространство сверху и снизу для теней при hover. 3) TasksSection.jsx - заменены классы scrollbar-thin scrollbar-thumb-blue-400 scrollbar-track-blue-100 на scrollbar-hide для скрытия ползунка прокрутки по запросу 'Убери ползунок прокрутки карточек'. РЕЗУЛЬТАТ: ✅ При наведении на карточку комнаты тени и границы отображаются полностью. ✅ Hover эффект (scale 1.02) работает корректно без обрезки. ✅ Ползунок прокрутки скрыт (scrollbar-hide). Frontend перезапущен успешно."
 
+  - task: "WeekDateSelector - Future Date Task Creation"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/WeekDateSelector.jsx, /app/frontend/src/components/TasksSection.jsx, /app/frontend/src/components/AddTaskModal.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "✅ РЕАЛИЗОВАНА ВОЗМОЖНОСТЬ СОЗДАНИЯ ЗАДАЧ НА БУДУЩИЕ ДАТЫ: Убрана блокировка кликов на будущие даты в WeekDateSelector. Изменения в /app/frontend/src/components/WeekDateSelector.jsx: 1) Удалена проверка disabled для будущих дат в handleDayClick() - теперь разрешены клики на все дни (строка 113-116). 2) Будущие даты визуально отличаются: синий цвет текста и чисел (text-blue-500, text-blue-600), opacity 70% для карточки, но остаются кликабельными. 3) Hover эффекты добавлены для будущих дат (hover:border-blue-300, hover:shadow-md). Кнопки будущих дат больше НЕ имеют: disabled=true, cursor-not-allowed, opacity-40. Теперь пользователь может: кликнуть на любую будущую дату (например, воскресенье), кнопка становится активной с желто-оранжевым градиентом, заголовок карточки меняется на день недели (например, 'Воскресенье'), кнопка 'Добавить задачу' доступна, можно создать задачу на выбранную будущую дату. Frontend успешно скомпилирован и перезапущен. Готово к тестированию полного flow создания задач на будущие даты."
+
   - task: "Admin Panel - User Activity Analytics & Statistics"
     implemented: true
     working: true
