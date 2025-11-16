@@ -144,7 +144,7 @@ export const Header = React.memo(({ user, userSettings, onCalendarClick, onNotif
             transition={{ duration: 0.5 }}
           >
             <img 
-              src="/LogoRudn.png" 
+              src="/logorudn.svg" 
               alt="RUDN Logo" 
               className="w-full h-full object-contain"
             />
