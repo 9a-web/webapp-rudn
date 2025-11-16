@@ -97,6 +97,11 @@ class UserSettings(BaseModel):
     notifications_enabled: bool = False
     notification_time: int = Field(default=10, ge=5, le=30)  # минут до начала пары
     
+    # Реферальная система
+    referral_code: Optional[str] = None  # уникальный реферальный код пользователя
+    referred_by: Optional[int] = None  # telegram_id пригласившего
+    referral_points_earned: int = 0  # заработано баллов с рефералов
+    
     # Метаданные
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
