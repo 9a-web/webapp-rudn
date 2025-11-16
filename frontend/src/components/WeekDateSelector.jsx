@@ -120,12 +120,45 @@ export const WeekDateSelector = ({
     if (onDateSelect) onDateSelect(date);
   };
   
+  // Обработчики переключения недель
+  const handlePreviousWeek = () => {
+    if (hapticFeedback) hapticFeedback('impact', 'medium');
+    setWeekOffset(prev => prev - 1);
+  };
+  
+  const handleNextWeek = () => {
+    if (hapticFeedback) hapticFeedback('impact', 'medium');
+    setWeekOffset(prev => prev + 1);
+  };
+  
   return (
     <div className="mb-4">
-      {/* Контейнер с горизонтальной прокруткой */}
-      <div className="overflow-x-auto scrollbar-hide -mx-2 px-2">
-        <div className="flex gap-2 min-w-max">
-          {weekDates.map((date, index) => {
+      {/* Контейнер с кнопками и датами */}
+      <div className="flex items-center gap-2">
+        {/* Кнопка предыдущей недели */}
+        <motion.button
+          onClick={handlePreviousWeek}
+          whileTap={{ scale: 0.9 }}
+          className="flex-shrink-0 transition-transform hover:scale-105 active:scale-95"
+          aria-label="Предыдущая неделя"
+          style={{ touchAction: 'manipulation' }}
+        >
+          <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="17" cy="17" r="17" transform="rotate(90 17 17)" fill="url(#paint0_linear_prev)"/>
+            <path d="M18.9768 21.3489L15.3186 18.148C14.8633 17.7496 14.8633 17.0412 15.3186 16.6428L18.9768 13.4419" stroke="white" strokeWidth="1.6" strokeLinecap="round"/>
+            <defs>
+              <linearGradient id="paint0_linear_prev" x1="-5.50005" y1="38" x2="34.4999" y2="5.5" gradientUnits="userSpaceOnUse">
+                <stop stopColor="#FFE228"/>
+                <stop offset="1" stopColor="#FF7700"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </motion.button>
+        
+        {/* Контейнер с горизонтальной прокруткой */}
+        <div className="flex-1 overflow-x-auto scrollbar-hide">
+          <div className="flex gap-2 min-w-max">
+            {weekDates.map((date, index) => {
             const past = isPastDay(date);
             const today = isToday(date);
             const future = isFutureDay(date);
