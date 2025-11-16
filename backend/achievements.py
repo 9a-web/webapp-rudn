@@ -394,3 +394,70 @@ async def mark_achievements_as_seen(db, telegram_id: int) -> bool:
         {"$set": {"seen": True}}
     )
     return result.modified_count > 0
+
+
+async def award_referral_points(db, telegram_id: int, points_earned: int):
+    """
+    Начислить баллы рефереру за активность реферала
+    10% от заработанных баллов распределяется по цепочке:
+    - Уровень 1: 50% от 10% = 5% от original points
+    - Уровень 2: 25% от 10% = 2.5% от original points
+    - Уровень 3: 10% от 10% = 1% от original points
+    """
+    try:
+        # Получаем все реферальные связи для этого пользователя
+        connections = await db.referral_connections.find({
+            "referred_telegram_id": telegram_id
+        }).to_list(None)
+        
+        if not connections:
+            return  # Нет рефереров
+        
+        # Расчет бонусов по уровням
+        # 10% от заработанных баллов идёт в реферальную программу
+        total_referral_pool = int(points_earned * 0.10)
+        
+        level_percentages = {
+            1: 0.50,  # 50% от реферального пула
+            2: 0.25,  # 25% от реферального пула
+            3: 0.10   # 10% от реферального пула
+        }
+        
+        for connection in connections:
+            referrer_id = connection["referrer_telegram_id"]
+            level = connection["level"]
+            
+            # Вычисляем бонус для этого уровня
+            bonus = int(total_referral_pool * level_percentages.get(level, 0))
+            
+            if bonus > 0:
+                # Обновляем статистику реферера
+                await db.user_stats.update_one(
+                    {"telegram_id": referrer_id},
+                    {
+                        "$inc": {"total_points": bonus},
+                        "$set": {"updated_at": datetime.utcnow()}
+                    },
+                    upsert=True
+                )
+                
+                # Обновляем заработанные баллы в user_settings
+                await db.user_settings.update_one(
+                    {"telegram_id": referrer_id},
+                    {"$inc": {"referral_points_earned": bonus}}
+                )
+                
+                # Обновляем заработанные баллы в реферальной связи
+                await db.referral_connections.update_one(
+                    {
+                        "referrer_telegram_id": referrer_id,
+                        "referred_telegram_id": telegram_id,
+                        "level": level
+                    },
+                    {"$inc": {"points_earned": bonus}}
+                )
+                
+                logger.info(f"💰 Начислено {bonus} баллов пользователю {referrer_id} за активность реферала {telegram_id} (уровень {level})")
+    
+    except Exception as e:
+        logger.error(f"❌ Ошибка при начислении реферальных баллов: {e}", exc_info=True)
