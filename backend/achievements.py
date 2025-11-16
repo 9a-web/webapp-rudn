@@ -267,6 +267,9 @@ async def check_and_award_achievements(db, telegram_id: int, stats: UserStats) -
                 "$set": {"updated_at": datetime.utcnow()}
             }
         )
+        
+        # Начисляем бонусы рефереру за активность (10% от заработанных баллов)
+        await award_referral_points(db, telegram_id, total_points)
     
     return NewAchievementsResponse(
         new_achievements=new_achievements,
