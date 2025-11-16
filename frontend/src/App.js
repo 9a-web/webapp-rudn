@@ -69,6 +69,7 @@ const Home = () => {
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
   // Состояния для модальных окон в Header (для отслеживания)
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   // Состояние для модального окна ShareScheduleModal
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
@@ -77,13 +78,14 @@ const Home = () => {
     localStorage.setItem('activeTab', activeTab);
   }, [activeTab]);
 
-  // Отслеживание всех модальных окон (кроме ProfileModal) для скрытия нижнего меню
+  // Отслеживание всех модальных окон для скрытия нижнего меню
   const isAnyModalOpen = 
     isCalendarOpen || 
     isAnalyticsOpen || 
     isAchievementsOpen || 
     isNotificationSettingsOpen ||
     isMenuOpen ||
+    isProfileOpen ||
     isShareModalOpen ||
     isAddTaskModalOpen; // from TasksSection's AddTaskModal
 
