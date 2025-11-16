@@ -2819,6 +2819,289 @@ async def get_course_stats():
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# ============ Эндпоинты для реферальной системы ============
+
+def generate_referral_code(telegram_id: int) -> str:
+    """Генерирует уникальный реферальный код для пользователя"""
+    import hashlib
+    import secrets
+    
+    # Создаём код из telegram_id + случайная соль
+    salt = secrets.token_hex(4)
+    raw_string = f"{telegram_id}_{salt}"
+    hash_object = hashlib.sha256(raw_string.encode())
+    code = hash_object.hexdigest()[:10].upper()
+    
+    return code
+
+
+@api_router.get("/referral/code/{telegram_id}", response_model=ReferralCodeResponse)
+async def get_referral_code(telegram_id: int):
+    """
+    Получить или создать реферальный код пользователя
+    """
+    try:
+        # Получаем пользователя
+        user = await db.user_settings.find_one({"telegram_id": telegram_id})
+        
+        if not user:
+            raise HTTPException(status_code=404, detail="Пользователь не найден")
+        
+        # Если у пользователя ещё нет реферального кода - создаём
+        referral_code = user.get("referral_code")
+        if not referral_code:
+            referral_code = generate_referral_code(telegram_id)
+            
+            # Сохраняем код в базу
+            await db.user_settings.update_one(
+                {"telegram_id": telegram_id},
+                {"$set": {"referral_code": referral_code}}
+            )
+            logger.info(f"✅ Создан реферальный код для пользователя {telegram_id}: {referral_code}")
+        
+        # Получаем информацию о боте
+        bot_info = await db.bot_info.find_one({})
+        bot_username = bot_info.get("username", "rudn_mosbot") if bot_info else "rudn_mosbot"
+        
+        # Формируем реферальную ссылку
+        referral_link = f"https://t.me/{bot_username}?start=ref_{referral_code}"
+        
+        return ReferralCodeResponse(
+            referral_code=referral_code,
+            referral_link=referral_link,
+            bot_username=bot_username
+        )
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Ошибка при получении реферального кода: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+async def get_referral_level(referrer_id: int, referred_id: int, db) -> int:
+    """
+    Определяет уровень нового реферала в цепочке
+    Returns: 1, 2, или 3 (уровень в реферальной цепочке)
+    """
+    # Ищем связь пригласившего с его referrer
+    referrer = await db.user_settings.find_one({"telegram_id": referrer_id})
+    
+    if not referrer or not referrer.get("referred_by"):
+        # Если у пригласившего нет своего referrer - новый пользователь будет уровня 1
+        return 1
+    
+    # Ищем связь на уровень выше
+    parent_referrer_id = referrer.get("referred_by")
+    parent_referrer = await db.user_settings.find_one({"telegram_id": parent_referrer_id})
+    
+    if not parent_referrer or not parent_referrer.get("referred_by"):
+        # Если у parent нет своего referrer - новый пользователь будет уровня 2
+        return 2
+    
+    # Иначе - уровень 3 (максимум)
+    return 3
+
+
+async def create_referral_connections(referred_id: int, referrer_id: int, db):
+    """
+    Создаёт связи реферала со всеми вышестоящими в цепочке (до 3 уровней)
+    """
+    connections = []
+    current_referrer_id = referrer_id
+    level = 1
+    
+    # Проходим по цепочке вверх максимум 3 уровня
+    while current_referrer_id and level <= 3:
+        # Создаём связь
+        connection = {
+            "id": str(uuid.uuid4()),
+            "referrer_telegram_id": current_referrer_id,
+            "referred_telegram_id": referred_id,
+            "level": level,
+            "created_at": datetime.utcnow(),
+            "points_earned": 0
+        }
+        connections.append(connection)
+        
+        # Ищем следующего в цепочке
+        current_referrer = await db.user_settings.find_one({"telegram_id": current_referrer_id})
+        if current_referrer and current_referrer.get("referred_by"):
+            current_referrer_id = current_referrer.get("referred_by")
+            level += 1
+        else:
+            break
+    
+    # Сохраняем все связи
+    if connections:
+        await db.referral_connections.insert_many(connections)
+        logger.info(f"✅ Создано {len(connections)} реферальных связей для пользователя {referred_id}")
+    
+    return connections
+
+
+@api_router.get("/referral/stats/{telegram_id}", response_model=ReferralStats)
+async def get_referral_stats(telegram_id: int):
+    """
+    Получить статистику по рефералам пользователя
+    """
+    try:
+        # Получаем пользователя и его реферальный код
+        user = await db.user_settings.find_one({"telegram_id": telegram_id})
+        
+        if not user:
+            raise HTTPException(status_code=404, detail="Пользователь не найден")
+        
+        referral_code = user.get("referral_code")
+        if not referral_code:
+            # Создаём код если его нет
+            referral_code = generate_referral_code(telegram_id)
+            await db.user_settings.update_one(
+                {"telegram_id": telegram_id},
+                {"$set": {"referral_code": referral_code}}
+            )
+        
+        # Получаем информацию о боте для ссылки
+        bot_info = await db.bot_info.find_one({})
+        bot_username = bot_info.get("username", "rudn_mosbot") if bot_info else "rudn_mosbot"
+        referral_link = f"https://t.me/{bot_username}?start=ref_{referral_code}"
+        
+        # Получаем все реферальные связи пользователя
+        connections = await db.referral_connections.find({
+            "referrer_telegram_id": telegram_id
+        }).to_list(None)
+        
+        # Группируем по уровням
+        level_1_ids = [c["referred_telegram_id"] for c in connections if c["level"] == 1]
+        level_2_ids = [c["referred_telegram_id"] for c in connections if c["level"] == 2]
+        level_3_ids = [c["referred_telegram_id"] for c in connections if c["level"] == 3]
+        
+        # Получаем информацию о рефералах
+        async def get_referrals_info(telegram_ids, level):
+            if not telegram_ids:
+                return []
+            
+            users = await db.user_settings.find({
+                "telegram_id": {"$in": telegram_ids}
+            }).to_list(None)
+            
+            result = []
+            for u in users:
+                # Получаем статистику баллов реферала
+                stats = await db.user_stats.find_one({"telegram_id": u["telegram_id"]})
+                total_points = stats.get("total_points", 0) if stats else 0
+                
+                # Получаем сколько заработал для пригласившего
+                connection = next((c for c in connections if c["referred_telegram_id"] == u["telegram_id"] and c["level"] == level), None)
+                points_for_referrer = connection.get("points_earned", 0) if connection else 0
+                
+                result.append(ReferralUser(
+                    telegram_id=u["telegram_id"],
+                    username=u.get("username"),
+                    first_name=u.get("first_name"),
+                    last_name=u.get("last_name"),
+                    registered_at=u.get("created_at", datetime.utcnow()),
+                    level=level,
+                    total_points=total_points,
+                    points_earned_for_referrer=points_for_referrer
+                ))
+            
+            return result
+        
+        level_1_referrals = await get_referrals_info(level_1_ids, 1)
+        level_2_referrals = await get_referrals_info(level_2_ids, 2)
+        level_3_referrals = await get_referrals_info(level_3_ids, 3)
+        
+        # Подсчитываем заработанные баллы по уровням
+        level_1_points = sum(c.get("points_earned", 0) for c in connections if c["level"] == 1)
+        level_2_points = sum(c.get("points_earned", 0) for c in connections if c["level"] == 2)
+        level_3_points = sum(c.get("points_earned", 0) for c in connections if c["level"] == 3)
+        total_referral_points = level_1_points + level_2_points + level_3_points
+        
+        return ReferralStats(
+            telegram_id=telegram_id,
+            referral_code=referral_code,
+            referral_link=referral_link,
+            level_1_count=len(level_1_referrals),
+            level_2_count=len(level_2_referrals),
+            level_3_count=len(level_3_referrals),
+            total_referral_points=total_referral_points,
+            level_1_points=level_1_points,
+            level_2_points=level_2_points,
+            level_3_points=level_3_points,
+            level_1_referrals=level_1_referrals,
+            level_2_referrals=level_2_referrals,
+            level_3_referrals=level_3_referrals
+        )
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Ошибка при получении статистики рефералов: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/referral/tree/{telegram_id}")
+async def get_referral_tree(telegram_id: int):
+    """
+    Получить дерево рефералов пользователя (для визуализации)
+    """
+    try:
+        async def build_tree_node(user_telegram_id: int, current_level: int = 1, max_depth: int = 3) -> Optional[ReferralTreeNode]:
+            if current_level > max_depth:
+                return None
+            
+            # Получаем пользователя
+            user = await db.user_settings.find_one({"telegram_id": user_telegram_id})
+            if not user:
+                return None
+            
+            # Получаем статистику
+            stats = await db.user_stats.find_one({"telegram_id": user_telegram_id})
+            total_points = stats.get("total_points", 0) if stats else 0
+            
+            # Получаем прямых рефералов (level 1 от этого пользователя)
+            direct_referrals = await db.referral_connections.find({
+                "referrer_telegram_id": user_telegram_id,
+                "level": 1
+            }).to_list(None)
+            
+            # Рекурсивно строим детей
+            children = []
+            for ref in direct_referrals[:10]:  # Ограничиваем 10 на уровень для производительности
+                child_node = await build_tree_node(
+                    ref["referred_telegram_id"],
+                    current_level + 1,
+                    max_depth
+                )
+                if child_node:
+                    children.append(child_node)
+            
+            return ReferralTreeNode(
+                telegram_id=user["telegram_id"],
+                username=user.get("username"),
+                first_name=user.get("first_name"),
+                level=current_level,
+                total_points=total_points,
+                children=children,
+                registered_at=user.get("created_at", datetime.utcnow())
+            )
+        
+        # Строим дерево начиная с текущего пользователя
+        tree = await build_tree_node(telegram_id, 1, 3)
+        
+        if not tree:
+            raise HTTPException(status_code=404, detail="Пользователь не найден")
+        
+        return tree
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Ошибка при построении дерева рефералов: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # Include the router in the main app
 app.include_router(api_router)
 
