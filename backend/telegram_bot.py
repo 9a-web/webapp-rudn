@@ -45,6 +45,99 @@ db = mongo_client[DB_NAME]
 clear_db_pending = {}
 
 
+async def create_referral_connections(referred_id: int, referrer_id: int):
+    """
+    Создаёт связи реферала со всеми вышестоящими в цепочке (до 3 уровней)
+    """
+    import uuid
+    connections = []
+    current_referrer_id = referrer_id
+    level = 1
+    
+    # Проходим по цепочке вверх максимум 3 уровня
+    while current_referrer_id and level <= 3:
+        # Создаём связь
+        connection = {
+            "id": str(uuid.uuid4()),
+            "referrer_telegram_id": current_referrer_id,
+            "referred_telegram_id": referred_id,
+            "level": level,
+            "created_at": datetime.utcnow(),
+            "points_earned": 0
+        }
+        connections.append(connection)
+        
+        # Ищем следующего в цепочке
+        current_referrer = await db.user_settings.find_one({"telegram_id": current_referrer_id})
+        if current_referrer and current_referrer.get("referred_by"):
+            current_referrer_id = current_referrer.get("referred_by")
+            level += 1
+        else:
+            break
+    
+    # Сохраняем все связи
+    if connections:
+        await db.referral_connections.insert_many(connections)
+        logger.info(f"✅ Создано {len(connections)} реферальных связей для пользователя {referred_id}")
+    
+    return connections
+
+
+async def award_referral_bonus(referrer_id: int, referred_id: int, points: int, level: int):
+    """
+    Начисляет бонусные баллы пригласившему за регистрацию реферала
+    """
+    try:
+        # Обновляем статистику пригласившего
+        stats = await db.user_stats.find_one({"telegram_id": referrer_id})
+        
+        if not stats:
+            # Создаём статистику если её нет
+            import uuid
+            stats = {
+                "id": str(uuid.uuid4()),
+                "telegram_id": referrer_id,
+                "total_points": points,
+                "friends_invited": 1,
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow()
+            }
+            await db.user_stats.insert_one(stats)
+        else:
+            # Обновляем существующую статистику
+            await db.user_stats.update_one(
+                {"telegram_id": referrer_id},
+                {
+                    "$inc": {
+                        "total_points": points,
+                        "friends_invited": 1
+                    },
+                    "$set": {"updated_at": datetime.utcnow()}
+                }
+            )
+        
+        # Обновляем заработанные баллы с рефералов в user_settings
+        await db.user_settings.update_one(
+            {"telegram_id": referrer_id},
+            {"$inc": {"referral_points_earned": points}}
+        )
+        
+        # Обновляем заработанные баллы в реферальной связи
+        await db.referral_connections.update_one(
+            {
+                "referrer_telegram_id": referrer_id,
+                "referred_telegram_id": referred_id,
+                "level": level
+            },
+            {"$inc": {"points_earned": points}}
+        )
+        
+        logger.info(f"💰 Начислено {points} баллов пользователю {referrer_id} за реферала {referred_id} (уровень {level})")
+        
+    except Exception as e:
+        logger.error(f"❌ Ошибка при начислении бонуса: {e}", exc_info=True)
+
+
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """
     Обработчик команды /start
